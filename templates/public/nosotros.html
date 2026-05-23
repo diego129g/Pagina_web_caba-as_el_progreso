@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block title %}Nosotros — Cabañas El Progreso{% endblock %}
+{% block content %}
+
+<section class="page-hero">
+    <h1><strong>Nosotros</strong></h1>
+    <p>Conoce la historia detrás de Cabañas El Progreso</p>
+</section>
+
+<section class="nosotros-section">
+    <div class="container">
+        <div class="nosotros-grid">
+            <div class="nosotros-img">🏕️</div>
+            <div class="nosotros-content">
+                <h2>Un sueño <strong>hecho realidad</strong></h2>
+                <p>Cabañas El Progreso nació del amor por la naturaleza y el deseo de crear un espacio donde las parejas pudieran escapar del ruido de la ciudad y reconectar con lo esencial.</p>
+                <p>Con 7 cabañas únicas, cada una con su propio nombre y personalidad, ofrecemos una experiencia personalizada que va más allá del simple alojamiento.</p>
+                <p>Nuestro compromiso es brindarte atención personalizada, entornos naturales impecables y momentos que te acompañarán toda la vida.</p>
+                <div class="nosotros-valores">
+                    <div class="valor-item">
+                        <span>💚</span>
+                        <p>Naturaleza</p>
+                    </div>
+                    <div class="valor-item">
+                        <span>🤝</span>
+                        <p>Calidez</p>
+                    </div>
+                    <div class="valor-item">
+                        <span>⭐</span>
+                        <p>Calidad</p>
+                    </div>
+                    <div class="valor-item">
+                        <span>💑</span>
+                        <p>Romance</p>
+                    </div>
+                </div>
+                <br>
+                <a href="{% url 'nueva_reserva' %}" class="btn btn--primary">
+                    📅 Haz tu reserva
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

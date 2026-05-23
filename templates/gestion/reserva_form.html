@@ -1,0 +1,137 @@
+{% extends 'gestion/base_gestion.html' %}
+{% block title %}{% if reserva %}Editar{% else %}Nueva{% endif %} Reserva{% endblock %}
+{% block page_title %}{% if reserva %}Editar Reserva #{{ reserva.id }}{% else %}Nueva Reserva{% endif %}{% endblock %}
+
+{% block content %}
+
+<div class="breadcrumb">
+    <a href="{% url 'reservas_list' %}">Reservas</a>
+    <span>›</span>
+    <span>{% if reserva %}Editar #{{ reserva.id }}{% else %}Nueva{% endif %}</span>
+</div>
+
+{% if error %}
+    <div class="error-msg" style="margin-bottom:24px;">⚠️ {{ error }}</div>
+{% endif %}
+
+<form method="POST" class="form-gestion">
+    {% csrf_token %}
+
+    <p style="font-family:'Playfair Display',serif; color:var(--verde-oscuro); font-size:1.05rem; margin-bottom:20px; padding-bottom:12px; border-bottom:2px solid var(--verde-suave);">
+        Cliente
+    </p>
+
+    {% if not reserva %}
+    <div class="form-row">
+        <div class="form-group">
+            <label>Nombre completo *</label>
+            <input type="text" name="nombre" required placeholder="Nombre del huésped">
+        </div>
+        <div class="form-group">
+            <label>Documento *</label>
+            <input type="text" name="documento" required placeholder="Cédula o pasaporte">
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="form-group">
+            <label>Teléfono *</label>
+            <input type="tel" name="telefono" required placeholder="+57 300 000 0000">
+        </div>
+        <div class="form-group">
+            <label>Correo</label>
+            <input type="email" name="correo" placeholder="Opcional">
+        </div>
+    </div>
+    <div class="form-group">
+        <label>Fecha de nacimiento *</label>
+        <input type="date" name="fecha_nacimiento" required>
+    </div>
+    {% else %}
+    <div class="form-group">
+        <label>Cliente</label>
+        <select name="cliente_id">
+            {% for cliente in clientes %}
+                <option value="{{ cliente.id }}"
+                    {% if reserva.cliente == cliente %}selected{% endif %}>
+                    {{ cliente.nombre }} — {{ cliente.documento }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+    {% endif %}
+
+    <p style="font-family:'Playfair Display',serif; color:var(--verde-oscuro); font-size:1.05rem; margin:28px 0 20px; padding-bottom:12px; border-bottom:2px solid var(--verde-suave);">
+        Estadía
+    </p>
+
+    <div class="form-row">
+        <div class="form-group">
+            <label>Cabaña *</label>
+            <select name="cabana_id" required>
+                {% for cabana in cabanas %}
+                    <option value="{{ cabana.id }}"
+                        {% if reserva and reserva.cabana == cabana %}selected{% endif %}>
+                        {{ cabana.nombre }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Tarifa *</label>
+            <select name="tarifa_id" required>
+                {% for tarifa in tarifas %}
+                    <option value="{{ tarifa.id }}"
+                        {% if reserva and reserva.tarifa == tarifa %}selected{% endif %}>
+                        {{ tarifa.plan.nombre }} — {{ tarifa.temporada.nombre }} (${{ tarifa.precio|floatformat:0 }})
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="form-group">
+            <label>Fecha y hora de entrada *</label>
+            <input type="datetime-local" name="fecha_inicio" required
+                   value="{% if reserva %}{{ reserva.fecha_inicio|date:'Y-m-d' }}T{{ reserva.fecha_inicio|time:'H:i' }}{% endif %}">
+        </div>
+        <div class="form-group">
+            <label>Fecha y hora de salida *</label>
+            <input type="datetime-local" name="fecha_fin" required
+                   value="{% if reserva %}{{ reserva.fecha_fin|date:'Y-m-d' }}T{{ reserva.fecha_fin|time:'H:i' }}{% endif %}">
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label>Extras</label>
+        <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:10px; margin-top:8px;">
+            {% for extra in extras %}
+            <label style="display:flex; align-items:center; gap:10px; padding:12px; border:2px solid rgba(26,60,42,0.12); border-radius:8px; cursor:pointer;">
+                <input type="checkbox" name="extras" value="{{ extra.id }}"
+                       {% if reserva and extra in reserva.extras.all %}checked{% endif %}
+                       style="accent-color:var(--verde-medio);">
+                <span>
+                    <strong style="display:block; font-size:0.88rem;">{{ extra.nombre }}</strong>
+                    <small style="color:var(--verde-medio);">${{ extra.precio|floatformat:0 }}</small>
+                </span>
+            </label>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label>Notas</label>
+        <textarea name="notas" rows="3" placeholder="Notas adicionales">{% if reserva %}{{ reserva.notas }}{% endif %}</textarea>
+    </div>
+
+    <div style="display:flex; gap:12px; margin-top:8px;">
+        <button type="submit" class="btn-primary">
+            💾 {% if reserva %}Guardar cambios{% else %}Crear reserva{% endif %}
+        </button>
+        <a href="{% url 'reservas_list' %}" class="btn-sm btn-sm--gris" style="padding:10px 20px;">
+            Cancelar
+        </a>
+    </div>
+</form>
+
+{% endblock %}

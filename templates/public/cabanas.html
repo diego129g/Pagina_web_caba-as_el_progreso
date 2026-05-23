@@ -1,0 +1,40 @@
+<!-- ════════════════════════════════════
+     cabanas.html
+     ════════════════════════════════════ -->
+{% extends 'base.html' %}
+{% block title %}Cabañas — Cabañas El Progreso{% endblock %}
+{% block content %}
+
+<section class="page-hero">
+    <h1><strong>Nuestras</strong> Cabañas</h1>
+    <p>Seis espacios únicos diseñados para vivir una experiencia inolvidable</p>
+</section>
+
+<section class="cabanas-section">
+    <div class="container">
+        <div class="cabanas-grid">
+            {% for cabana in cabanas %}
+            <article class="cabana-card">
+                <div class="cabana-card__img">🏡</div>
+                <div class="cabana-card__body">
+                    <span class="cabana-card__badge">✅ Disponible</span>
+                    <h3>{{ cabana.nombre }}</h3>
+                    <p>Una experiencia única rodeada de naturaleza, diseñada especialmente para parejas que buscan descanso y romance.</p>
+                    <a href="{% url 'cabana_detalles' cabana.id %}" class="btn btn--outline btn--full">
+                        📅 Ver más detalles
+                    </a>
+                </div>
+            </article>
+            {% empty %}
+            <p style="text-align:center; color:var(--gris-texto); grid-column:1/-1;">
+                No hay cabañas disponibles en este momento.
+            </p>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+{% endblock %}
+
+
+

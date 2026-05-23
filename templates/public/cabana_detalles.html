@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}{{ cabana.nombre }} — Cabañas El Progreso{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/public.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<section class="page-hero">
+  <h1><strong>{{ cabana.nombre }}</strong></h1>
+  <p>Conoce todos los planes y precios disponibles para esta cabaña</p>
+</section>
+
+<div class="detalle-layout">
+  <div class="container">
+
+    <div class="detalle-layout__row">
+
+      {% comment "── Sidebar ──" %}
+      {% endcomment %}
+      <aside class="detalle-sidebar" role="navigation" aria-label="Navegación entre cabañas">
+        <div class="detalle-sidebar__header" id="sidebar-header">
+          <h3>🏡 Navegar cabañas</h3>
+          <button class="detalle-sidebar__toggle" id="sidebar-toggle" aria-expanded="false" aria-label="Mostrar lista de cabañas">▾</button>
+        </div>
+        <div class="detalle-sidebar__list" id="sidebar-list">
+          {% for c in cabanas %}
+          <a href="{% url 'cabana_detalles' c.id %}"
+             class="detalle-sidebar__link{% if c.id == cabana.id %} active{% endif %}">
+            <span class="icon">🏡</span>
+            {{ c.nombre }}
+          </a>
+          {% endfor %}
+        </div>
+      </aside>
+
+      {% comment "── Contenido principal ──" %}
+      {% endcomment %}
+      <div class="detalle-content">
+
+        {% comment "── Info de la cabaña ──" %}
+        {% endcomment %}
+        <div class="detalle-info-card" id="info-cabana" data-observe>
+          <div class="detalle-info-card__img">🏡</div>
+          <div class="detalle-info-card__body">
+            <span class="detalle-info-card__badge">✅ Disponible</span>
+            <h2><strong>{{ cabana.nombre }}</strong></h2>
+            <p>Una experiencia única rodeada de naturaleza, diseñada especialmente para parejas que buscan descanso y romance.</p>
+            <a href="{% url 'nueva_reserva' %}" class="btn btn--primary btn--full">
+              📅 Reservar ahora
+            </a>
+          </div>
+        </div>
+
+        {% comment "── Tarifas por temporada ──" %}
+        {% endcomment %}
+        {% regroup tarifas by temporada as tarifas_por_temporada %}
+        {% for grupo in tarifas_por_temporada %}
+        <div class="detalle-temporada" id="temporada-{{ grupo.grouper.id }}" data-observe>
+          <h3 class="detalle-temporada__title">
+            <span class="icon">🌿</span>
+            {{ grupo.grouper.nombre }}
+          </h3>
+          {% for tarifa in grupo.list %}
+          <div class="tarifa-card">
+            <div class="tarifa-card__info">
+              <h4>{{ tarifa.plan.nombre }}</h4>
+              <p>{{ tarifa.plan.descripcion }}</p>
+            </div>
+            <div class="tarifa-card__precio">
+              <span class="monto">{{ tarifa.precio|floatformat:0 }}</span>
+              <span class="duracion">{{ tarifa.plan.duracion_horas }} horas</span>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% endfor %}
+
+        {% comment "── Extras ──" %}
+        {% endcomment %}
+        {% if extras %}
+        <div class="detalle-extras" data-observe>
+          <h3 class="detalle-extras__title">
+            <span class="icon">🎁</span>
+            Extras disponibles
+          </h3>
+          <div class="detalle-extras__grid">
+            {% for extra in extras %}
+            <div class="extra-card">
+              <span class="extra-card__nombre">{{ extra.nombre }}</span>
+              <p class="extra-card__desc">{{ extra.descripcion }}</p>
+              <span class="extra-card__precio">{{ extra.precio|floatformat:0 }}</span>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        {% comment "── Calendario de disponibilidad ──" %}
+        {% endcomment %}
+        <div class="calendario-seccion" data-observe>
+          <h3 class="calendario-seccion__title">
+            <span class="icon">📅</span>
+            Disponibilidad
+          </h3>
+          <div id="calendario-container"
+               data-cabana-id="{{ cabana.id }}"
+               data-url="{% url 'disponibilidad' %}">
+          </div>
+        </div>
+
+        {% comment "── Acciones ──" %}
+        {% endcomment %}
+        <div class="detalle-actions">
+          <a href="{% url 'cabanas' %}" class="btn btn--outline">
+            ← Volver a cabañas
+          </a>
+          <a href="{% url 'nueva_reserva' %}" class="btn btn--primary">
+            📅 Reservar esta cabaña
+          </a>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/cabana_detalles.js' %}"></script>
+{% endblock %}

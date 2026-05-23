@@ -1,0 +1,80 @@
+{% extends 'gestion/base_gestion.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-card__icon stat-card__icon--dorado">⏳</div>
+        <div class="stat-card__info">
+            <p>Pendientes</p>
+            <h3>{{ pendientes }}</h3>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card__icon stat-card__icon--verde">✅</div>
+        <div class="stat-card__info">
+            <p>Confirmadas</p>
+            <h3>{{ confirmadas }}</h3>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-card__icon stat-card__icon--azul">📅</div>
+        <div class="stat-card__info">
+            <p>Total reservas</p>
+            <h3>{{ pendientes|add:confirmadas }}</h3>
+        </div>
+    </div>
+</div>
+
+<div class="table-card">
+    <div class="table-card__header">
+        <h2>Reservas recientes</h2>
+        <a href="{% url 'reservas_list' %}" class="btn-primary">Ver todas</a>
+    </div>
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Cliente</th>
+                    <th>Cabaña</th>
+                    <th>Entrada</th>
+                    <th>Salida</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for reserva in recientes %}
+                <tr>
+                    <td>#{{ reserva.id }}</td>
+                    <td>{{ reserva.cliente.nombre }}</td>
+                    <td>{{ reserva.cabana.nombre }}</td>
+                    <td>{{ reserva.fecha_inicio|date:"d/m/Y" }} {{ reserva.fecha_inicio|time:"H:i" }}</td>
+                    <td>{{ reserva.fecha_fin|date:"d/m/Y" }} {{ reserva.fecha_fin|time:"H:i" }}</td>
+                    <td>
+                        <span class="badge badge--{{ reserva.estado }}">
+                            {{ reserva.get_estado_display }}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="actions">
+                            <a href="{% url 'reserva_detail' reserva.pk %}" class="btn-sm btn-sm--gris">Ver</a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" style="text-align:center; padding:32px; color:#6b6b6b;">
+                        No hay reservas aún.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}

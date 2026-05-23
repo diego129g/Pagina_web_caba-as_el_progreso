@@ -1,0 +1,13 @@
+venv/
+.env
+__pycache__/
+*.pyc
+staticfiles/
+db.sqlite3
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# VS Code
+.vscode/

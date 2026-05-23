@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+{% block title %}Reservar — Cabañas El Progreso{% endblock %}
+
+{% block content %}
+
+<section class="reserva-section">
+    <div class="container">
+        <div class="reserva-header">
+            <h1><strong>Haz</strong> tu reserva</h1>
+            <p>Completa el formulario y te contactaremos por WhatsApp para confirmar.</p>
+        </div>
+
+        {% if error %}
+            <div class="error-msg">⚠️ {{ error }}</div>
+        {% endif %}
+
+        <div class="form-card">
+            <form method="POST" action="{% url 'nueva_reserva' %}" novalidate>
+                {% csrf_token %}
+
+                <!-- Datos personales -->
+                <p class="form-section-title">👤 Tus datos</p>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="nombre">Nombre completo *</label>
+                        <input type="text"
+                               id="nombre"
+                               name="nombre"
+                               required
+                               placeholder="Tu nombre completo"
+                               autocomplete="name">
+                    </div>
+                    <div class="form-group">
+                        <label for="documento">Documento *</label>
+                        <input type="text"
+                               id="documento"
+                               name="documento"
+                               required
+                               placeholder="Cédula o pasaporte"
+                               inputmode="numeric">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="telefono">Teléfono / WhatsApp *</label>
+                        <input type="tel"
+                               id="telefono"
+                               name="telefono"
+                               required
+                               placeholder="+57 300 000 0000"
+                               autocomplete="tel"
+                               inputmode="tel">
+                    </div>
+                    <div class="form-group">
+                        <label for="correo">Correo electrónico <span style="font-weight:400;opacity:.6">(opcional)</span></label>
+                        <input type="email"
+                               id="correo"
+                               name="correo"
+                               placeholder="tu@correo.com"
+                               autocomplete="email"
+                               inputmode="email">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="fecha_nacimiento">Fecha de nacimiento *</label>
+                    <input type="date"
+                           id="fecha_nacimiento"
+                           name="fecha_nacimiento"
+                           required
+                           max="{{ hoy }}">
+                </div>
+
+                <!-- Detalles de la reserva -->
+                <p class="form-section-title" style="margin-top:32px;">🏡 Tu estadía</p>
+
+                <div class="form-group">
+                    <label for="cabana_id">Cabaña *</label>
+                    <select id="cabana_id" name="cabana_id" required>
+                        <option value="">Selecciona una cabaña</option>
+                        {% for cabana in cabanas %}
+                            <option value="{{ cabana.id }}">{{ cabana.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="tarifa_id">Plan *</label>
+                    <select id="tarifa_id" name="tarifa_id" required>
+                        <option value="">Selecciona un plan</option>
+                        {% for tarifa in tarifas %}
+                            <option value="{{ tarifa.id }}">
+                                {{ tarifa.plan.nombre }} — {{ tarifa.temporada.nombre }}
+                                (${{ tarifa.precio|floatformat:0 }})
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="fecha_inicio">Fecha y hora de entrada *</label>
+                        <input type="datetime-local"
+                               id="fecha_inicio"
+                               name="fecha_inicio"
+                               required>
+                    </div>
+                    <div class="form-group">
+                        <label for="fecha_fin">Fecha y hora de salida *</label>
+                        <input type="datetime-local"
+                               id="fecha_fin"
+                               name="fecha_fin"
+                               required>
+                    </div>
+                </div>
+
+                <!-- Extras -->
+                {% if extras %}
+                <p class="form-section-title" style="margin-top:32px;">🎁 Extras opcionales</p>
+                <div class="extras-grid">
+                    {% for extra in extras %}
+                    <label class="extra-option">
+                        <input type="checkbox" name="extras" value="{{ extra.id }}">
+                        <div>
+                            <strong>{{ extra.nombre }}</strong>
+                            <span>${{ extra.precio|floatformat:0 }}</span>
+                        </div>
+                    </label>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <!-- Notas -->
+                <div class="form-group" style="margin-top:24px;">
+                    <label for="notas">Notas adicionales <span style="font-weight:400;opacity:.6">(opcional)</span></label>
+                    <textarea id="notas"
+                              name="notas"
+                              rows="3"
+                              placeholder="¿Algo especial que debamos saber? ¿Es un aniversario, cumpleaños?"></textarea>
+                </div>
+
+                <div class="form-submit">
+                    <button type="submit" class="btn btn--primary btn--full" style="font-size:1rem; padding:16px;">
+                        💬 Continuar por WhatsApp
+                    </button>
+                    <p style="text-align:center; margin-top:14px; font-size:0.8rem; color:var(--gris-texto);">
+                        Al continuar serás redirigido a WhatsApp para confirmar tu reserva.
+                    </p>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

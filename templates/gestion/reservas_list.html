@@ -1,0 +1,96 @@
+{% extends 'gestion/base_gestion.html' %}
+{% block title %}Reservas{% endblock %}
+{% block page_title %}Reservas{% endblock %}
+
+{% block content %}
+
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+    <div></div>
+    <a href="{% url 'reserva_nueva_admin' %}" class="btn-primary">➕ Nueva reserva</a>
+</div>
+
+<!-- Filtros -->
+<form method="GET" class="filtros">
+    <div class="filtro-group">
+        <label>Estado</label>
+        <select name="estado">
+            <option value="">Todos</option>
+            <option value="pendiente"  {% if request.GET.estado == 'pendiente' %}selected{% endif %}>Pendiente</option>
+            <option value="confirmada" {% if request.GET.estado == 'confirmada' %}selected{% endif %}>Confirmada</option>
+            <option value="cancelada"  {% if request.GET.estado == 'cancelada' %}selected{% endif %}>Cancelada</option>
+        </select>
+    </div>
+    <div class="filtro-group">
+        <label>Cabaña</label>
+        <select name="cabana">
+            <option value="">Todas</option>
+            {% for cabana in cabanas %}
+                <option value="{{ cabana.id }}" {% if request.GET.cabana == cabana.id|stringformat:"s" %}selected{% endif %}>
+                    {{ cabana.nombre }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="filtro-group">
+        <label>Fecha de entrada</label>
+        <input type="date" name="fecha" value="{{ request.GET.fecha }}">
+    </div>
+    <button type="submit" class="btn-primary">Filtrar</button>
+    <a href="{% url 'reservas_list' %}" class="btn-sm btn-sm--gris" style="padding:10px 16px;">Limpiar</a>
+</form>
+
+<div class="table-card">
+    <div class="table-card__header">
+        <h2>{{ reservas.count }} reserva{{ reservas.count|pluralize }}</h2>
+    </div>
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Cliente</th>
+                    <th>Cabaña</th>
+                    <th>Plan</th>
+                    <th>Entrada</th>
+                    <th>Salida</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for reserva in reservas %}
+                <tr>
+                    <td>#{{ reserva.id }}</td>
+                    <td>
+                        <strong>{{ reserva.cliente.nombre }}</strong><br>
+                        <small style="color:#6b6b6b;">{{ reserva.cliente.telefono }}</small>
+                    </td>
+                    <td>{{ reserva.cabana.nombre }}</td>
+                    <td>{{ reserva.tarifa.plan.nombre }}</td>
+                    <td>{{ reserva.fecha_inicio|date:"d/m/Y" }} {{ reserva.fecha_inicio|time:"H:i" }}</td>
+                    <td>{{ reserva.fecha_fin|date:"d/m/Y" }} {{ reserva.fecha_fin|time:"H:i" }}</td>
+                    <td>
+                        <span class="badge badge--{{ reserva.estado }}">
+                            {{ reserva.get_estado_display }}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="actions">
+                            <a href="{% url 'reserva_detail' reserva.pk %}" class="btn-sm btn-sm--gris">Ver</a>
+                            <a href="{% url 'reserva_editar' reserva.pk %}" class="btn-sm btn-sm--verde">Editar</a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" style="text-align:center; padding:32px; color:#6b6b6b;">
+                        No hay reservas con estos filtros.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}

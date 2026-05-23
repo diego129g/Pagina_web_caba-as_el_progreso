@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+{% block title %}Inicio — Cabañas El Progreso{% endblock %}
+
+{% block content %}
+
+<!-- Hero -->
+<section class="hero" aria-label="Bienvenida">
+    <div class="hero__content">
+        <span class="hero__tag">🌿 Desconecta · Respira · Disfruta</span>
+        <h1 class="hero__title">
+            <strong>Descubre la naturaleza.</strong><br>
+            <em>Vive la experiencia.</em>
+        </h1>
+        <p class="hero__subtitle">
+            Disfruta de nuestras cabañas rodeadas de naturaleza,
+            con todas las comodidades para una estancia inolvidable en pareja.
+        </p>
+        <div class="hero__actions">
+            <a href="{% url 'nueva_reserva' %}" class="btn btn--primary">
+                📅 Reservar Ahora
+            </a>
+            <a href="{% url 'cabanas' %}" class="btn btn--secondary">
+                Ver Cabañas
+            </a>
+        </div>
+        <div class="hero__scroll" aria-hidden="true">
+            <span>Descubrir más</span>
+        </div>
+    </div>
+</section>
+
+<!-- Servicios destacados -->
+<section class="servicios-home" aria-labelledby="servicios-titulo">
+    <div class="container">
+        <span class="section__tag">Todo lo que necesitas para descansar</span>
+        <h2 class="section__title" id="servicios-titulo">
+            Servicios pensados <strong>para ti</strong>
+        </h2>
+        <p class="section__subtitle">
+            Cada detalle está diseñado para que tu estadía sea perfecta
+        </p>
+        <div class="servicios-home__grid">
+            <div class="servicio-card">
+                <span class="servicio-card__icon">🏡</span>
+                <h3>Alojamiento</h3>
+                <p>Cabañas equipadas para tu comodidad y descanso.</p>
+            </div>
+            <div class="servicio-card">
+                <span class="servicio-card__icon">🏊</span>
+                <h3>Piscina</h3>
+                <p>Relájate rodeado de naturaleza.</p>
+            </div>
+            <div class="servicio-card">
+                <span class="servicio-card__icon">🛁</span>
+                <h3>Jacuzzi</h3>
+                <p>Momentos únicos de relax.</p>
+            </div>
+            <div class="servicio-card">
+                <span class="servicio-card__icon">🍽️</span>
+                <h3>Alimentación</h3>
+                <p>Platillos preparados para ti.</p>
+            </div>
+            <div class="servicio-card">
+                <span class="servicio-card__icon">🌿</span>
+                <h3>Actividades</h3>
+                <p>Caminatas y fogatas al aire libre.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Por qué elegirnos -->
+<section class="por-que" aria-labelledby="porque-titulo">
+    <div class="container">
+        <div class="por-que__grid">
+            <div class="por-que__item">
+                <span class="icon">🌲</span>
+                <div>
+                    <h4>Entorno Natural</h4>
+                    <p>Rodeado de montañas y aire puro</p>
+                </div>
+            </div>
+            <div class="por-que__item">
+                <span class="icon">🤝</span>
+                <div>
+                    <h4>Atención Personalizada</h4>
+                    <p>Te hacemos sentir como en casa</p>
+                </div>
+            </div>
+            <div class="por-que__item">
+                <span class="icon">🛡️</span>
+                <div>
+                    <h4>Seguridad</h4>
+                    <p>Tu tranquilidad es nuestra prioridad</p>
+                </div>
+            </div>
+            <div class="por-que__item">
+                <span class="icon">📅</span>
+                <div>
+                    <h4>Reservas Fáciles</h4>
+                    <p>Rápido, seguro y sin complicaciones</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

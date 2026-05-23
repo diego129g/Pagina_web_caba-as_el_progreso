@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1a3c2a">
+    <title>{% block title %}Gestión{% endblock %} — Cabañas El Progreso</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/gestion.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+<div class="gestion-layout">
+
+    <!-- ── Sidebar ── -->
+    <aside class="sidebar" id="sidebar" role="navigation" aria-label="Menú de gestión">
+        <div class="sidebar__brand">
+            <h2>Cabañas El Progreso</h2>
+            <span>Panel de gestión</span>
+        </div>
+        <nav class="sidebar__nav">
+            <a href="{% url 'dashboard' %}"
+               class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                <span class="nav-icon">📊</span> Dashboard
+            </a>
+            <a href="{% url 'reservas_list' %}"
+               class="{% if 'reserva' in request.resolver_match.url_name %}active{% endif %}">
+                <span class="nav-icon">📅</span> Reservas
+            </a>
+            <a href="{% url 'reserva_nueva_admin' %}">
+                <span class="nav-icon">➕</span> Nueva Reserva
+            </a>
+            <a href="{% url 'disponibilidad_gestion' %}"
+               class="{% if request.resolver_match.url_name == 'disponibilidad_gestion' %}active{% endif %}">
+                <span class="nav-icon">📅</span> Disponibilidad
+            </a>
+            <a href="{% url 'admin:index' %}">
+                <span class="nav-icon">⚙️</span> Administración
+            </a>
+        </nav>
+        <div class="sidebar__footer">
+            <form method="POST" action="{% url 'admin_logout' %}">
+                {% csrf_token %}
+                <button type="submit">
+                    🚪 Cerrar sesión
+                </button>
+            </form>
+        </div>
+    </aside>
+
+    <!-- ── Main ── -->
+    <div class="gestion-main">
+        <header class="gestion-header">
+            <div class="gestion-header__left">
+                <button class="sidebar-toggle"
+                        id="sidebar-toggle"
+                        aria-label="Abrir menú"
+                        aria-expanded="false">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+                <h1>{% block page_title %}Dashboard{% endblock %}</h1>
+            </div>
+            <div class="gestion-header__user">
+                <span class="gestion-header__name">
+                    {{ request.user.get_full_name|default:request.user.username }}
+                </span>
+                <div class="gestion-header__avatar">
+                    {{ request.user.username|first|upper }}
+                </div>
+            </div>
+        </header>
+
+        <div class="gestion-content">
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+
+</div>
+
+<script>
+(function () {
+    var toggle   = document.getElementById('sidebar-toggle');
+    var sidebar  = document.getElementById('sidebar');
+    var overlay  = document.getElementById('sidebar-overlay');
+
+    if (!toggle || !sidebar || !overlay) return;
+
+    function openSidebar() {
+        sidebar.classList.add('open');
+        overlay.classList.add('show');
+        toggle.setAttribute('aria-expanded', 'true');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeSidebar() {
+        sidebar.classList.remove('open');
+        overlay.classList.remove('show');
+        toggle.setAttribute('aria-expanded', 'false');
+        document.body.style.overflow = '';
+    }
+
+    toggle.addEventListener('click', function () {
+        sidebar.classList.contains('open') ? closeSidebar() : openSidebar();
+    });
+
+    overlay.addEventListener('click', closeSidebar);
+
+    // Cerrar al navegar en móvil
+    sidebar.querySelectorAll('a').forEach(function (link) {
+        link.addEventListener('click', function () {
+            if (window.innerWidth < 900) closeSidebar();
+        });
+    });
+})();
+</script>
+
+{% block extra_js %}{% endblock %}
+</body>
+</html>

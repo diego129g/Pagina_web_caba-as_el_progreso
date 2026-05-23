@@ -1,0 +1,129 @@
+{% extends 'gestion/base_gestion.html' %}
+{% block title %}Reserva #{{ reserva.id }}{% endblock %}
+{% block page_title %}Reserva #{{ reserva.id }}{% endblock %}
+
+{% block content %}
+
+<div class="breadcrumb">
+    <a href="{% url 'reservas_list' %}">Reservas</a>
+    <span>›</span>
+    <span>Reserva #{{ reserva.id }}</span>
+</div>
+
+<div class="detalle-grid">
+
+    <!-- Info principal -->
+    <div>
+        <div class="detalle-card" style="margin-bottom:24px;">
+            <h2>Información de la reserva</h2>
+            <div class="detalle-row">
+                <span>Estado</span>
+                <span><span class="badge badge--{{ reserva.estado }}">{{ reserva.get_estado_display }}</span></span>
+            </div>
+            <div class="detalle-row">
+                <span>Cabaña</span>
+                <span>{{ reserva.cabana.nombre }}</span>
+            </div>
+            <div class="detalle-row">
+                <span>Plan</span>
+                <span>{{ reserva.tarifa.plan.nombre }}</span>
+            </div>
+            <div class="detalle-row">
+                <span>Temporada</span>
+                <span>{{ reserva.tarifa.temporada.nombre }}</span>
+            </div>
+            <div class="detalle-row">
+                <span>Entrada</span>
+                <span>{{ reserva.fecha_inicio|date:"d/m/Y" }} {{ reserva.fecha_inicio|time:"H:i" }}</span>
+            </div>
+            <div class="detalle-row">
+                <span>Salida</span>
+                <span>{{ reserva.fecha_fin|date:"d/m/Y" }} {{ reserva.fecha_fin|time:"H:i" }}</span>
+            </div>
+            {% if reserva.notas %}
+            <div class="detalle-row">
+                <span>Notas</span>
+                <span>{{ reserva.notas }}</span>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="detalle-card">
+            <h2>Cliente</h2>
+            <div class="detalle-row">
+                <span>Nombre</span>
+                <span>{{ reserva.cliente.nombre }}</span>
+            </div>
+            <div class="detalle-row">
+                <span>Documento</span>
+                <span>{{ reserva.cliente.documento }}</span>
+            </div>
+            <div class="detalle-row">
+                <span>Teléfono</span>
+                <span>{{ reserva.cliente.telefono }}</span>
+            </div>
+            {% if reserva.cliente.correo %}
+            <div class="detalle-row">
+                <span>Correo</span>
+                <span>{{ reserva.cliente.correo }}</span>
+            </div>
+            {% endif %}
+            <div class="detalle-row">
+                <span>Edad</span>
+                <span>{{ reserva.cliente.edad }} años</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Panel lateral -->
+    <div>
+        <div class="detalle-card" style="margin-bottom:24px;">
+            <h2>Resumen de pago</h2>
+            <div class="detalle-row">
+                <span>Plan base</span>
+                <span>${{ reserva.total_plan|floatformat:0 }}</span>
+            </div>
+            {% for re in reserva.reservaextra_set.all %}
+            <div class="detalle-row">
+                <span>{{ re.extra.nombre }} x{{ re.cantidad }}</span>
+                <span>${{ re.subtotal|floatformat:0 }}</span>
+            </div>
+            {% endfor %}
+            <div class="total-row">
+                <span>Total</span>
+                <span>${{ reserva.total|floatformat:0 }}</span>
+            </div>
+        </div>
+
+        <div class="detalle-card">
+            <h2>Acciones</h2>
+            <div style="display:flex; flex-direction:column; gap:12px;">
+                {% if reserva.estado == 'pendiente' %}
+                <form method="POST" action="{% url 'confirmar_reserva' reserva.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-primary" style="width:100%; justify-content:center;">
+                        ✅ Confirmar reserva
+                    </button>
+                </form>
+                {% endif %}
+                {% if reserva.estado != 'cancelada' %}
+                <form method="POST" action="{% url 'cancelar_reserva' reserva.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-sm btn-sm--rojo" style="width:100%; justify-content:center; padding:10px;">
+                        ❌ Cancelar reserva
+                    </button>
+                </form>
+                {% endif %}
+                <a href="{% url 'reserva_editar' reserva.pk %}" class="btn-sm btn-sm--gris" style="width:100%; justify-content:center; padding:10px; text-align:center;">
+                    ✏️ Editar reserva
+                </a>
+                <a href="{% url 'reservas_list' %}" class="btn-sm btn-sm--gris" style="width:100%; justify-content:center; padding:10px; text-align:center;">
+                    ← Volver a reservas
+                </a>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

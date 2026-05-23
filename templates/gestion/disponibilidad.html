@@ -1,0 +1,142 @@
+{% extends 'gestion/base_gestion.html' %}
+{% load static %}
+{% block title %}Disponibilidad{% endblock %}
+{% block page_title %}Disponibilidad de Cabañas{% endblock %}
+
+{% block extra_css %}
+<style>
+.calendario-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  gap: 12px;
+}
+.calendario-header__mes {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--verde-oscuro);
+  min-width: 160px;
+  text-align: center;
+}
+.calendario-header__btn {
+  background: #fff;
+  border: 1px solid rgba(26,60,42,0.12);
+  border-radius: 10px;
+  padding: 8px 14px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  color: var(--verde-medio);
+  user-select: none;
+  transition: all 0.25s ease;
+}
+.calendario-header__btn:hover {
+  background: var(--verde-medio);
+  color: #fff;
+  border-color: var(--verde-medio);
+}
+.calendario-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 3px;
+  background: var(--gris-suave);
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(26,60,42,0.06);
+}
+.calendario-grid__dia-nombre {
+  background: var(--verde-oscuro);
+  color: #fff;
+  text-align: center;
+  padding: 10px 4px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.calendario-grid__dia {
+  background: #fff;
+  text-align: center;
+  padding: 10px 2px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--negro);
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.calendario-grid__dia--otro-mes { color: rgba(26,60,42,0.15); }
+.calendario-grid__dia--pasado { color: rgba(26,60,42,0.2); cursor: default; }
+.calendario-grid__dia--disponible { cursor: pointer; }
+.calendario-grid__dia--disponible:hover { background: var(--verde-suave); transform: scale(1.05); z-index: 1; border-radius: 6px; }
+.calendario-grid__dia--ocupado { background: #fde8e8; color: #c0392b; font-weight: 600; border-radius: 4px; cursor: not-allowed; }
+.calendario-grid__dia--hoy { font-weight: 800; color: var(--verde-oscuro); box-shadow: inset 0 0 0 2px var(--verde-claro); border-radius: 6px; }
+.calendario-leyenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(26,60,42,0.06);
+}
+.calendario-leyenda__item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.78rem;
+  color: var(--gris-texto);
+}
+.calendario-leyenda__color {
+  width: 16px; height: 16px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+.calendario-leyenda__color--disponible { background: #fff; border: 1px solid rgba(26,60,42,0.12); }
+.calendario-leyenda__color--ocupado { background: #fde8e8; border: 1px solid #f5c6c6; }
+.calendario-leyenda__color--hoy { box-shadow: inset 0 0 0 2px var(--verde-claro); }
+.calendario-loading {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--gris-texto);
+  font-size: 0.9rem;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="breadcrumb">
+  <a href="{% url 'dashboard' %}">Dashboard</a>
+  <span>/</span>
+  <span>Disponibilidad</span>
+</div>
+
+<div class="filtros" style="margin-bottom:24px;">
+  <div class="filtro-group" style="flex:2;">
+    <label for="cabana-select">Seleccionar cabaña</label>
+    <select id="cabana-select">
+      {% for c in cabanas %}
+      <option value="{{ c.id }}">{{ c.nombre }}</option>
+      {% endfor %}
+    </select>
+  </div>
+</div>
+
+<div class="table-card">
+  <div class="table-card__header">
+    <h2>📅 Calendario de disponibilidad</h2>
+  </div>
+  <div style="padding:24px 20px;">
+    <div id="calendario-container"
+         data-url="{% url 'disponibilidad' %}">
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/gestion_disponibilidad.js' %}"></script>
+{% endblock %}
