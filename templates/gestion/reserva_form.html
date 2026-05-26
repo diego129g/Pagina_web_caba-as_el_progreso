@@ -135,3 +135,51 @@
 </form>
 
 {% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+    var docInput = document.querySelector('input[name="documento"]');
+    if (!docInput) return;
+
+    var nombreInput    = document.querySelector('input[name="nombre"]');
+    var telefonoInput  = document.querySelector('input[name="telefono"]');
+    var correoInput    = document.querySelector('input[name="correo"]');
+    var fechaInput     = document.querySelector('input[name="fecha_nacimiento"]');
+
+    function buscarCliente(documento) {
+        if (!documento || documento.length < 3) return;
+
+        fetch('{% url "buscar_cliente" %}?documento=' + encodeURIComponent(documento))
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.encontrado) {
+                    var c = data.cliente;
+                    nombreInput.value   = c.nombre;
+                    telefonoInput.value = c.telefono;
+                    correoInput.value   = c.correo;
+                    fechaInput.value    = c.fecha_nacimiento;
+                    [nombreInput, telefonoInput, correoInput, fechaInput].forEach(function(el) {
+                        el.setAttribute('readonly', 'readonly');
+                        el.style.backgroundColor = '#f0f7f2';
+                    });
+                } else {
+                    [nombreInput, telefonoInput, correoInput, fechaInput].forEach(function(el) {
+                        el.removeAttribute('readonly');
+                        el.style.backgroundColor = '';
+                    });
+                }
+            })
+            .catch(function() {});
+    }
+
+    docInput.addEventListener('blur', function() {
+        buscarCliente(docInput.value.trim());
+    });
+
+    docInput.addEventListener('change', function() {
+        buscarCliente(docInput.value.trim());
+    });
+})();
+</script>
+{% endblock %}
