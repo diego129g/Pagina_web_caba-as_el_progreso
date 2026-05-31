@@ -49,7 +49,7 @@ class ReservaExtraInline(admin.TabularInline):
 
 @admin.register(Reserva)
 class ReservaAdmin(admin.ModelAdmin):
-    list_display   = ['id', 'cliente', 'cabana', 'fecha_inicio', 'fecha_fin', 'estado']
+    list_display   = ['id', 'cliente', 'cabana', 'fecha_inicio', 'fecha_fin', 'estado', 'precio_plan', 'total', 'valor_reserva']
     list_filter    = ['estado', 'cabana', 'fecha_inicio']
     search_fields  = ['cliente__nombre', 'cliente__documento']
     date_hierarchy = 'fecha_inicio'

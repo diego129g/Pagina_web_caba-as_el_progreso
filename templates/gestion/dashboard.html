@@ -52,8 +52,8 @@
                     <td>#{{ reserva.id }}</td>
                     <td>{{ reserva.cliente.nombre }}</td>
                     <td>{{ reserva.cabana.nombre }}</td>
-                    <td>{{ reserva.fecha_inicio|date:"d/m/Y" }} {{ reserva.fecha_inicio|time:"H:i" }}</td>
-                    <td>{{ reserva.fecha_fin|date:"d/m/Y" }} {{ reserva.fecha_fin|time:"H:i" }}</td>
+                    <td>{{ reserva.fecha_inicio|date:"d/m/Y" }}</td>
+                    <td>{{ reserva.fecha_fin|date:"d/m/Y" }}</td>
                     <td>
                         <span class="badge badge--{{ reserva.estado }}">
                             {{ reserva.get_estado_display }}

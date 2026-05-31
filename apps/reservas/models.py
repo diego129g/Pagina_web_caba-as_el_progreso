@@ -101,6 +101,10 @@ class Reserva(models.Model):
     fecha_inicio = models.DateField()
     fecha_fin = models.DateField()
     estado = models.CharField(max_length=20, choices=ESTADO_CHOICES, default='confirmada')
+    nombre_plan = models.CharField(max_length=100, blank=True, null=True, verbose_name="Nombre del plan personalizado")
+    precio_plan = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True, verbose_name="Precio personalizado del plan")
+    total = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True, verbose_name="Total manual")
+    valor_reserva = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True, verbose_name="Valor con el que reservó")
     notas = models.TextField(blank=True)
     creado_at = models.DateTimeField(auto_now_add=True)
 
@@ -129,19 +133,31 @@ class Reserva(models.Model):
                 )
     
     def total_plan(self):
+        if self.precio_plan is not None:
+            return self.precio_plan
         return self.tarifa.precio
     
     def total_extras(self):
         return sum(re.extra.precio * re.cantidad for re in self.reservaextra_set.all()
                    )
     
-    def total(self):
+    def subtotal(self):
         return self.total_plan() + self.total_extras()
-    
+
+    def valor_restante(self):
+        if self.total is not None:
+            return self.total - (self.valor_reserva or 0)
+        return None
+
+    def nombre_plan_display(self):
+        if self.nombre_plan:
+            return self.nombre_plan
+        return self.tarifa.plan.nombre
+
     def __str__(self):
         return f"Reserva #{self.id} — {self.cliente} — {self.cabana}"
 
-class Meta:
+    class Meta:
         verbose_name        = 'Reserva'
         verbose_name_plural = 'Reservas'
         ordering            = ['-fecha_inicio']

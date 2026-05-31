@@ -457,6 +457,19 @@ tbody td {
   background: var(--blanco);
 }
 .form-row { display: grid; grid-template-columns: 1fr; gap: 0; }
+.form-checkbox-plan { align-self: flex-end; }
+.checkbox-plan-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border: 2px solid rgba(26,60,42,0.12);
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 22px;
+}
+.checkbox-plan-label strong { font-size: 0.88rem; }
+.checkbox-plan-input { accent-color: var(--verde-medio); width: 18px; height: 18px; }
 
 /* ── Breadcrumb ────────────────────────────── */
 .breadcrumb {

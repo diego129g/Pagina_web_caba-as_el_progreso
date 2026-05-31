@@ -3,7 +3,7 @@ import requests
 import logging
 from django.conf import settings
 
-from apps.reservas.models import Cabana, Tarifa
+from apps.reservas.models import Cabana, Tarifa, Extra
 
 logger = logging.getLogger(__name__)
 
@@ -18,9 +18,13 @@ def mensaje_reserva_formulario(data):
     documento = data.get("documento")
     telefono = data.get("telefono")
     correo = data.get("correo")
-    extras = data.get("extras", [])
     fecha_inicio = data.get("fecha_inicio")
     fecha_fin = data.get("fecha_fin")
+
+    extras_ids = data.getlist('extras') if hasattr(data, 'getlist') else data.get('extras', [])
+    if isinstance(extras_ids, str):
+        extras_ids = [extras_ids]
+    extras = Extra.objects.filter(id__in=extras_ids)
 
     mensaje = f""" *Hola estoy interesad@ en hacer una reserva*
 
@@ -30,9 +34,12 @@ def mensaje_reserva_formulario(data):
 📧 Correo: {correo}
 🏡 Cabaña: {cabana.nombre}
 🎯 Plan: {tarifa.plan.nombre}
-🗓️ Temporada: {tarifa.temporada.nombre}
-🎁 Extras: {', '.join([f'{e.nombre} x{e.cantidad}' for e in extras])}
+🗓️ Temporada: {tarifa.temporada.nombre}"""
 
+    if extras:
+        mensaje += "\n🎁 Extras: " + ", ".join([f'{e.nombre} (${e.precio:,.0f})' for e in extras])
+
+    mensaje += f"""
 📅 Entrada: {fecha_inicio}
 📅 Salida: {fecha_fin}
 """
@@ -54,10 +61,10 @@ def generar_mensaje_reserva(reserva):
 Hola *{reserva.cliente.nombre}*, recibimos tu solicitud de reserva. Aquí están los detalles:
 
 🏡 *Cabaña:* {reserva.cabana.nombre}
-🎯 *Plan:* {reserva.tarifa.plan.nombre}
+🎯 *Plan:* {reserva.nombre_plan_display()}
 🗓️ *Temporada:* {reserva.tarifa.temporada.nombre}
-📅 *Entrada:* {reserva.fecha_inicio.strftime('%d/%m/%Y a las %H:%M')}
-📅 *Salida:* {reserva.fecha_fin.strftime('%d/%m/%Y a las %H:%M')}
+📅 *Entrada:* {reserva.fecha_inicio.strftime('%d/%m/%Y')}
+📅 *Salida:* {reserva.fecha_fin.strftime('%d/%m/%Y')}
 👤 *Cliente:* {reserva.cliente.nombre}
 📄 *Documento:* {reserva.cliente.documento}
 📞 *Teléfono:* {reserva.cliente.telefono}"""
@@ -68,15 +75,24 @@ Hola *{reserva.cliente.nombre}*, recibimos tu solicitud de reserva. Aquí están
             mensaje += f"\n  • {re.extra.nombre} x{re.cantidad} — ${re.subtotal():,.0f}"
 
     mensaje += f"""
-
 💰 *Valor del plan:* ${reserva.total_plan():,.0f}"""
 
     if extras:
         mensaje += f"\n💰 *Valor extras:* ${reserva.total_extras():,.0f}"
 
     mensaje += f"""
-💰 *Total a pagar:* ${reserva.total():,.0f}
+💰 *Subtotal:* ${reserva.subtotal():,.0f}"""
 
+    if reserva.total is not None:
+        mensaje += f"\n💰 *Total:* ${reserva.total:,.0f}"
+
+    if reserva.valor_reserva is not None:
+        mensaje += f"\n💵 *Valor con el que reservó:* ${reserva.valor_reserva:,.0f}"
+
+    if reserva.valor_restante() is not None:
+        mensaje += f"\n📊 *Valor restante:* ${reserva.valor_restante():,.0f}"
+
+    mensaje += f"""
 🔖 *Número de reserva:* #{reserva.id}
 
 

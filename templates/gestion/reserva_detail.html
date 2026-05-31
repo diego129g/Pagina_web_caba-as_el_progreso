@@ -26,7 +26,7 @@
             </div>
             <div class="detalle-row">
                 <span>Plan</span>
-                <span>{{ reserva.tarifa.plan.nombre }}</span>
+                <span>{{ reserva.nombre_plan_display }}</span>
             </div>
             <div class="detalle-row">
                 <span>Temporada</span>
@@ -34,11 +34,11 @@
             </div>
             <div class="detalle-row">
                 <span>Entrada</span>
-                <span>{{ reserva.fecha_inicio|date:"d/m/Y" }} {{ reserva.fecha_inicio|time:"H:i" }}</span>
+                <span>{{ reserva.fecha_inicio|date:"d/m/Y" }}</span>
             </div>
             <div class="detalle-row">
                 <span>Salida</span>
-                <span>{{ reserva.fecha_fin|date:"d/m/Y" }} {{ reserva.fecha_fin|time:"H:i" }}</span>
+                <span>{{ reserva.fecha_fin|date:"d/m/Y" }}</span>
             </div>
             {% if reserva.notas %}
             <div class="detalle-row">
@@ -80,8 +80,8 @@
         <div class="detalle-card" style="margin-bottom:24px;">
             <h2>Resumen de pago</h2>
             <div class="detalle-row">
-                <span>Plan base</span>
-                <span>${{ reserva.total_plan|floatformat:0 }}</span>
+                <span>{% if reserva.nombre_plan %}Plan personalizado{% else %}Plan base{% endif %}</span>
+                <span>${{ reserva.total_plan|floatformat:0 }}{% if reserva.precio_plan is not None %} *{% endif %}</span>
             </div>
             {% for re in reserva.reservaextra_set.all %}
             <div class="detalle-row">
@@ -89,10 +89,33 @@
                 <span>${{ re.subtotal|floatformat:0 }}</span>
             </div>
             {% endfor %}
-            <div class="total-row">
+            <div class="detalle-row">
+                <span>Subtotal</span>
+                <span>${{ reserva.subtotal|floatformat:0 }}</span>
+            </div>
+            {% if reserva.total is not None %}
+            <div class="detalle-row">
                 <span>Total</span>
                 <span>${{ reserva.total|floatformat:0 }}</span>
             </div>
+            {% endif %}
+            {% if reserva.valor_reserva is not None %}
+            <div class="detalle-row">
+                <span>Valor con el que reservó</span>
+                <span>${{ reserva.valor_reserva|floatformat:0 }}</span>
+            </div>
+            {% endif %}
+            {% if reserva.total is not None %}
+            <div class="total-row">
+                <span>Valor restante</span>
+                <span>${{ reserva.valor_restante|floatformat:0 }}</span>
+            </div>
+            {% endif %}
+            {% if reserva.nombre_plan %}
+            <div style="margin-top:8px; font-size:0.75rem; color:var(--verde-medio);">
+                * Plan personalizado: {{ reserva.nombre_plan }}
+            </div>
+            {% endif %}
         </div>
 
         <div class="detalle-card">

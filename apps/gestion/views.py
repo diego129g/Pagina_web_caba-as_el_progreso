@@ -77,11 +77,13 @@ class NuevaReservaAdminView(AdminRequiredMixin, View):
             return redirect('reservas_list')
         except Exception as e:
             context = {
-                'cabanas':  Cabana.objects.filter(activa=True),
-                'tarifas':  Tarifa.objects.select_related('plan', 'temporada').all(),
-                'extras':   Extra.objects.filter(activo=True),
-                'clientes': Cliente.objects.all(),
-                'error':    str(e),
+                'cabanas':             Cabana.objects.filter(activa=True),
+                'tarifas':             Tarifa.objects.select_related('plan', 'temporada').all(),
+                'extras':              Extra.objects.filter(activo=True),
+                'clientes':            Cliente.objects.all(),
+                'error':               str(e),
+                'form_data':           request.POST,
+                'extras_seleccionados': request.POST.getlist('extras'),
             }
             return render(request, 'gestion/reserva_form.html', context)
 
@@ -107,12 +109,14 @@ class ReservaEditView(AdminRequiredMixin, View):
             return redirect('reserva_detail', pk=pk)
         except Exception as e:
             context = {
-                'reserva':  reserva,
-                'cabanas':  Cabana.objects.filter(activa=True),
-                'tarifas':  Tarifa.objects.select_related('plan', 'temporada').all(),
-                'extras':   Extra.objects.filter(activo=True),
-                'clientes': Cliente.objects.all(),
-                'error':    str(e),
+                'reserva':             reserva,
+                'cabanas':             Cabana.objects.filter(activa=True),
+                'tarifas':             Tarifa.objects.select_related('plan', 'temporada').all(),
+                'extras':              Extra.objects.filter(activo=True),
+                'clientes':            Cliente.objects.all(),
+                'error':               str(e),
+                'form_data':           request.POST,
+                'extras_seleccionados': request.POST.getlist('extras'),
             }
             return render(request, 'gestion/reserva_form.html', context)
 
