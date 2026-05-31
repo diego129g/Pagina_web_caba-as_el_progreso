@@ -42,7 +42,46 @@
         {% comment "── Info de la cabaña ──" %}
         {% endcomment %}
         <div class="detalle-info-card" id="info-cabana" data-observe>
+          {% with fotos=cabana.fotos.all %}
+          {% if fotos %}
+          <div class="carrusel" data-total="{{ fotos|length }}">
+              <div class="carrusel__slides">
+                {% for foto in fotos %}
+                <div class="carrusel__slide">
+                  <img src="{{ foto.url }}"
+                       alt="{{ foto.alt|default:cabana.nombre }}"
+                       width="800" height="450"
+                       {% if not forloop.first %}loading="lazy"{% endif %}
+                       decoding="async">
+                </div>
+                {% endfor %}
+              </div>
+            {% if fotos|length > 1 %}
+            <button class="carrusel__btn carrusel__btn--prev" aria-label="Anterior">‹</button>
+            <button class="carrusel__btn carrusel__btn--next" aria-label="Siguiente">›</button>
+            <div class="carrusel__dots">
+              {% for foto in fotos %}
+              <button class="carrusel__dot{% if forloop.first %} carrusel__dot--active{% endif %}"
+                      aria-label="Ir a foto {{ forloop.counter }}"></button>
+              {% endfor %}
+            </div>
+            {% endif %}
+          </div>
+          {% elif cabana.imagen_url %}
+          <div class="carrusel">
+              <div class="carrusel__slides">
+                <div class="carrusel__slide">
+                  <img src="{{ cabana.imagen_url }}"
+                       alt="{{ cabana.nombre }}"
+                       width="800" height="450"
+                       decoding="async">
+                </div>
+              </div>
+          </div>
+          {% else %}
           <div class="detalle-info-card__img">🏡</div>
+          {% endif %}
+          {% endwith %}
           <div class="detalle-info-card__body">
             <span class="detalle-info-card__badge">✅ Disponible</span>
             <h2><strong>{{ cabana.nombre }}</strong></h2>
@@ -132,4 +171,5 @@
 
 {% block extra_js %}
 <script src="{% static 'js/cabana_detalles.js' %}"></script>
+<script src="{% static 'js/carrusel.js' %}" defer></script>
 {% endblock %}

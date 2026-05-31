@@ -26,6 +26,7 @@ class Cliente(models.Model):
 class Cabana(models.Model):
     nombre = models.CharField(max_length=100)
     activa = models.BooleanField(default=True)
+    imagen_url = models.URLField(null=True, blank=True, verbose_name="Foto principal")
 
     def __str__(self):
         return self.nombre
@@ -34,6 +35,21 @@ class Cabana(models.Model):
         verbose_name = "Cabaña"
         verbose_name_plural = "Cabañas"
         ordering = ['nombre']
+
+
+class CabanaFoto(models.Model):
+    cabana = models.ForeignKey(Cabana, on_delete=models.CASCADE, related_name='fotos')
+    url = models.URLField(verbose_name="URL de la imagen")
+    orden = models.PositiveIntegerField(default=0, verbose_name="Orden")
+    alt = models.CharField(max_length=100, blank=True, verbose_name="Texto alternativo")
+
+    def __str__(self):
+        return f"Foto #{self.orden} — {self.cabana.nombre}"
+
+    class Meta:
+        verbose_name = "Foto de cabaña"
+        verbose_name_plural = "Fotos de cabañas"
+        ordering = ['orden']
 
 class Temporada(models.Model):
     nombre = models.CharField(max_length=100)

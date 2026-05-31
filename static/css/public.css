@@ -518,6 +518,7 @@ em { font-style: italic; color: var(--verde-claro); }
   gap: 12px;
 }
 .galeria-item {
+  position: relative;
   border-radius: var(--radio);
   overflow: hidden;
   aspect-ratio: 1;
@@ -525,15 +526,26 @@ em { font-style: italic; color: var(--verde-claro); }
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 2.5rem;
   cursor: pointer;
-  transition: var(--trans);
 }
-.galeria-item:hover { transform: scale(1.02); box-shadow: var(--sombra-hover); }
+
+.galeria-item img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  transition: transform 0.4s cubic-bezier(.4,0,.2,1);
+}
+
+.galeria-item:hover img { transform: scale(1.06); }
+.galeria-item:hover { box-shadow: var(--sombra-hover); }
+
 .galeria-item:first-child {
   grid-column: span 2;
   aspect-ratio: 16/9;
-  font-size: 3.5rem;
 }
 
 /* ════════════════════════════════════════════
@@ -997,6 +1009,102 @@ em { font-style: italic; color: var(--verde-claro); }
   font-size: 0.9rem;
   line-height: 1.7;
   margin-bottom: 20px;
+}
+
+/* ── Carrusel de fotos ── */
+.carrusel {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 14px;
+  background: #1a3c2a;
+  aspect-ratio: 4 / 3;
+}
+
+@media (min-width: 600px) {
+  .carrusel { aspect-ratio: 16 / 9; }
+}
+
+.carrusel__slides {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.45s cubic-bezier(.4,0,.2,1);
+}
+
+.carrusel__slide {
+  flex: 0 0 100%;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.carrusel__slide img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+.carrusel__btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  min-width: 44px;
+  min-height: 44px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(26,60,42,0.7);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  color: #fff;
+  font-size: 1.4rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.85;
+  transition: opacity 0.3s;
+}
+
+.carrusel__btn:hover { opacity: 1; }
+.carrusel__btn--prev { left: 8px; }
+.carrusel__btn--next { right: 8px; }
+
+.carrusel__dots {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.carrusel__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.5);
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s;
+  padding: 0;
+}
+
+.carrusel__dot--active {
+  width: 22px;
+  border-radius: 4px;
+  background: #fff;
+}
+
+.carrusel__dot:hover {
+  background: rgba(255,255,255,0.85);
 }
 
 /* ── Tarifas por temporada ── */

@@ -18,7 +18,7 @@ class CabanasView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['cabanas'] = Cabana.objects.filter(activa=True)
+        context['cabanas'] = Cabana.objects.filter(activa=True).prefetch_related('fotos')
         return context
 
 
@@ -26,6 +26,7 @@ class CabanaDetallesView(DetailView):
     model = Cabana
     template_name = 'public/cabana_detalles.html'
     context_object_name = 'cabana'
+    queryset = Cabana.objects.prefetch_related('fotos').all()
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
