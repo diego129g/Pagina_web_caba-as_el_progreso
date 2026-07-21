@@ -17,7 +17,7 @@
 <form method="POST" class="form-gestion">
     {% csrf_token %}
 
-    <p style="font-family:'Playfair Display',serif; color:var(--verde-oscuro); font-size:1.05rem; margin-bottom:20px; padding-bottom:12px; border-bottom:2px solid var(--verde-suave);">
+    <p style="font-family:'Playfair Display',serif; color:var(--azul-oscuro); font-size:1.05rem; margin-bottom:20px; padding-bottom:12px; border-bottom:2px solid var(--fondo-claro);">
         Cliente
     </p>
 
@@ -65,7 +65,7 @@
     </div>
     {% endif %}
 
-    <p style="font-family:'Playfair Display',serif; color:var(--verde-oscuro); font-size:1.05rem; margin:28px 0 20px; padding-bottom:12px; border-bottom:2px solid var(--verde-suave);">
+    <p style="font-family:'Playfair Display',serif; color:var(--azul-oscuro); font-size:1.05rem; margin:28px 0 20px; padding-bottom:12px; border-bottom:2px solid var(--fondo-claro);">
         Estadía
     </p>
 
@@ -132,20 +132,20 @@
         <label>Extras</label>
         <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:10px; margin-top:8px;">
             {% for extra in extras %}
-            <label style="display:flex; align-items:center; gap:10px; padding:12px; border:2px solid rgba(26,60,42,0.12); border-radius:8px; cursor:pointer;">
+            <label style="display:flex; align-items:center; gap:10px; padding:12px; border:2px solid rgba(4,44,83,0.12); border-radius:8px; cursor:pointer;">
                 <input type="checkbox" name="extras" value="{{ extra.id }}"
                        {% if form_data %}{% if extra.id|stringformat:"s" in extras_seleccionados %}checked{% endif %}{% elif reserva and extra in reserva.extras.all %}checked{% endif %}
-                       style="accent-color:var(--verde-medio);">
+                       style="accent-color:var(--azul-principal);">
                 <span>
                     <strong style="display:block; font-size:0.88rem;">{{ extra.nombre }}</strong>
-                    <small style="color:var(--verde-medio);">${{ extra.precio|floatformat:0 }}</small>
+                    <small style="color:var(--terracota);">${{ extra.precio|floatformat:0 }}</small>
                 </span>
             </label>
             {% endfor %}
         </div>
     </div>
 
-    <p style="font-family:'Playfair Display',serif; color:var(--verde-oscuro); font-size:1.05rem; margin:28px 0 20px; padding-bottom:12px; border-bottom:2px solid var(--verde-suave);">
+    <p style="font-family:'Playfair Display',serif; color:var(--azul-oscuro); font-size:1.05rem; margin:28px 0 20px; padding-bottom:12px; border-bottom:2px solid var(--fondo-claro);">
         Pago
     </p>
 
@@ -154,7 +154,7 @@
             <label>Total</label>
             <input type="number" name="total" step="0.01" min="0" placeholder="0.00"
                    value="{% if form_data.total %}{{ form_data.total }}{% elif reserva.total is not None %}{{ reserva.total }}{% endif %}">
-            <small style="color:var(--verde-medio);">Subtotal calculado: ${{ reserva.subtotal|floatformat:0|default:"" }}</small>
+            <small style="color:var(--terracota);">Subtotal calculado: ${{ reserva.subtotal|floatformat:0|default:"" }}</small>
         </div>
         <div class="form-group">
             <label>Valor con el que reservó</label>
@@ -205,7 +205,7 @@
                     fechaInput.value    = c.fecha_nacimiento;
                     [nombreInput, telefonoInput, correoInput, fechaInput].forEach(function(el) {
                         el.setAttribute('readonly', 'readonly');
-                        el.style.backgroundColor = '#f0f7f2';
+                        el.style.backgroundColor = '#E6F1FB';
                     });
                 } else {
                     [nombreInput, telefonoInput, correoInput, fechaInput].forEach(function(el) {
