@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Cliente, Cabana, Temporada, Plan, Tarifa, Extra, Reserva, ReservaExtra
+from .models import Cliente, Cabana, CabanaFoto, Temporada, Plan, Tarifa, Extra, Reserva, ReservaExtra
 
 
 @admin.register(Cliente)
@@ -9,11 +9,18 @@ class ClienteAdmin(admin.ModelAdmin):
     ordering       = ['nombre']
 
 
+class CabanaFotoInline(admin.TabularInline):
+    model  = CabanaFoto
+    extra  = 1
+    fields = ['url', 'orden', 'alt']
+
+
 @admin.register(Cabana)
 class CabanaAdmin(admin.ModelAdmin):
     list_display  = ['nombre', 'activa']
     list_filter   = ['activa']
     ordering      = ['nombre']
+    inlines       = [CabanaFotoInline]
 
 
 @admin.register(Temporada)
@@ -49,7 +56,7 @@ class ReservaExtraInline(admin.TabularInline):
 
 @admin.register(Reserva)
 class ReservaAdmin(admin.ModelAdmin):
-    list_display   = ['id', 'cliente', 'cabana', 'fecha_inicio', 'fecha_fin', 'estado']
+    list_display   = ['id', 'cliente', 'cabana', 'fecha_inicio', 'fecha_fin', 'estado', 'precio_plan', 'total', 'valor_reserva']
     list_filter    = ['estado', 'cabana', 'fecha_inicio']
     search_fields  = ['cliente__nombre', 'cliente__documento']
     date_hierarchy = 'fecha_inicio'

@@ -15,12 +15,32 @@
         <div class="cabanas-grid">
             {% for cabana in cabanas %}
             <article class="cabana-card">
-                <div class="cabana-card__img">🏡</div>
+                <div class="cabana-card__img">
+                    {% with primera_foto=cabana.fotos.all|first %}
+                    {% if cabana.imagen_url %}
+                    <img src="{{ cabana.imagen_url }}"
+                         alt="{{ cabana.nombre }}"
+                         width="400" height="200"
+                         loading="lazy"
+                         decoding="async"
+                         style="width:100%;height:100%;object-fit:cover;display:block;">
+                    {% elif primera_foto %}
+                    <img src="{{ primera_foto.url }}"
+                         alt="{{ primera_foto.alt|default:cabana.nombre }}"
+                         width="400" height="200"
+                         loading="lazy"
+                         decoding="async"
+                         style="width:100%;height:100%;object-fit:cover;display:block;">
+                    {% else %}
+                    🏡
+                    {% endif %}
+                    {% endwith %}
+                </div>
                 <div class="cabana-card__body">
                     <span class="cabana-card__badge">✅ Disponible</span>
                     <h3>{{ cabana.nombre }}</h3>
                     <p>Una experiencia única rodeada de naturaleza, diseñada especialmente para parejas que buscan descanso y romance.</p>
-                    <a href="{% url 'cabana_detalles' cabana.id %}" class="btn btn--outline btn--full">
+                    <a href="{% url 'cabana_detail' cabana.id %}" class="btn btn--outline btn--full">
                         📅 Ver más detalles
                     </a>
                 </div>

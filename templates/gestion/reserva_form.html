@@ -17,7 +17,7 @@
 <form method="POST" class="form-gestion">
     {% csrf_token %}
 
-    <p style="font-family:'Playfair Display',serif; color:var(--verde-oscuro); font-size:1.05rem; margin-bottom:20px; padding-bottom:12px; border-bottom:2px solid var(--verde-suave);">
+    <p style="font-family:'Playfair Display',serif; color:var(--azul-oscuro); font-size:1.05rem; margin-bottom:20px; padding-bottom:12px; border-bottom:2px solid var(--fondo-claro);">
         Cliente
     </p>
 
@@ -25,26 +25,31 @@
     <div class="form-row">
         <div class="form-group">
             <label>Nombre completo *</label>
-            <input type="text" name="nombre" required placeholder="Nombre del huésped">
+            <input type="text" name="nombre" required placeholder="Nombre del huésped"
+                   value="{{ form_data.nombre|default:'' }}">
         </div>
         <div class="form-group">
             <label>Documento *</label>
-            <input type="text" name="documento" required placeholder="Cédula o pasaporte">
+            <input type="text" name="documento" required placeholder="Cédula o pasaporte"
+                   value="{{ form_data.documento|default:'' }}">
         </div>
     </div>
     <div class="form-row">
         <div class="form-group">
             <label>Teléfono *</label>
-            <input type="tel" name="telefono" required placeholder="+57 300 000 0000">
+            <input type="tel" name="telefono" required placeholder="+57 300 000 0000"
+                   value="{{ form_data.telefono|default:'' }}">
         </div>
         <div class="form-group">
             <label>Correo</label>
-            <input type="email" name="correo" placeholder="Opcional">
+            <input type="email" name="correo" placeholder="Opcional"
+                   value="{{ form_data.correo|default:'' }}">
         </div>
     </div>
     <div class="form-group">
         <label>Fecha de nacimiento *</label>
-        <input type="date" name="fecha_nacimiento" required>
+        <input type="date" name="fecha_nacimiento" required
+               value="{{ form_data.fecha_nacimiento|default:'' }}">
     </div>
     {% else %}
     <div class="form-group">
@@ -60,7 +65,7 @@
     </div>
     {% endif %}
 
-    <p style="font-family:'Playfair Display',serif; color:var(--verde-oscuro); font-size:1.05rem; margin:28px 0 20px; padding-bottom:12px; border-bottom:2px solid var(--verde-suave);">
+    <p style="font-family:'Playfair Display',serif; color:var(--azul-oscuro); font-size:1.05rem; margin:28px 0 20px; padding-bottom:12px; border-bottom:2px solid var(--fondo-claro);">
         Estadía
     </p>
 
@@ -70,7 +75,7 @@
             <select name="cabana_id" required>
                 {% for cabana in cabanas %}
                     <option value="{{ cabana.id }}"
-                        {% if reserva and reserva.cabana == cabana %}selected{% endif %}>
+                        {% if form_data.cabana_id == cabana.id|stringformat:"s" %}selected{% elif reserva and reserva.cabana == cabana %}selected{% endif %}>
                         {{ cabana.nombre }}
                     </option>
                 {% endfor %}
@@ -78,27 +83,48 @@
         </div>
         <div class="form-group">
             <label>Tarifa *</label>
-            <select name="tarifa_id" required>
+            <select name="tarifa_id" required id="tarifa_select">
                 {% for tarifa in tarifas %}
-                    <option value="{{ tarifa.id }}"
-                        {% if reserva and reserva.tarifa == tarifa %}selected{% endif %}>
+                    <option value="{{ tarifa.id }}" data-precio="{{ tarifa.precio }}"
+                        {% if form_data.tarifa_id == tarifa.id|stringformat:"s" %}selected{% elif reserva and reserva.tarifa == tarifa %}selected{% endif %}>
                         {{ tarifa.plan.nombre }} — {{ tarifa.temporada.nombre }} (${{ tarifa.precio|floatformat:0 }})
                     </option>
                 {% endfor %}
             </select>
         </div>
+        <div class="form-group form-checkbox-plan">
+            <label class="checkbox-plan-label">
+                <input type="checkbox" name="plan_personalizado" id="plan_personalizado"
+                       {% if form_data.plan_personalizado or reserva.nombre_plan %}checked{% endif %}
+                       class="checkbox-plan-input">
+                <strong>Crear plan personalizado</strong>
+            </label>
+        </div>
+    </div>
+
+    <div id="plan_personalizado_fields" class="form-row" style="{% if not form_data.plan_personalizado and not reserva.nombre_plan %}display:none;{% endif %}">
+        <div class="form-group">
+            <label>Nombre del plan personalizado</label>
+            <input type="text" name="nombre_plan" id="nombre_plan" placeholder="Ej: Plan familiar — finde semana, Plan pareja — noche romántica"
+                   value="{% if form_data.nombre_plan %}{{ form_data.nombre_plan }}{% elif reserva.nombre_plan %}{{ reserva.nombre_plan }}{% endif %}">
+        </div>
+        <div class="form-group">
+            <label>Precio del plan personalizado</label>
+            <input type="number" name="precio_plan" id="precio_plan" step="0.01" min="0" placeholder="0.00"
+                   value="{% if form_data.precio_plan %}{{ form_data.precio_plan }}{% elif reserva.precio_plan is not None %}{{ reserva.precio_plan }}{% endif %}">
+        </div>
     </div>
 
     <div class="form-row">
         <div class="form-group">
-            <label>Fecha y hora de entrada *</label>
-            <input type="datetime-local" name="fecha_inicio" required
-                   value="{% if reserva %}{{ reserva.fecha_inicio|date:'Y-m-d' }}T{{ reserva.fecha_inicio|time:'H:i' }}{% endif %}">
+            <label>Fecha de entrada *</label>
+            <input type="date" name="fecha_inicio" required
+                   value="{% if form_data.fecha_inicio %}{{ form_data.fecha_inicio }}{% elif reserva %}{{ reserva.fecha_inicio|date:'Y-m-d' }}{% endif %}">
         </div>
         <div class="form-group">
-            <label>Fecha y hora de salida *</label>
-            <input type="datetime-local" name="fecha_fin" required
-                   value="{% if reserva %}{{ reserva.fecha_fin|date:'Y-m-d' }}T{{ reserva.fecha_fin|time:'H:i' }}{% endif %}">
+            <label>Fecha de salida *</label>
+            <input type="date" name="fecha_fin" required
+                   value="{% if form_data.fecha_fin %}{{ form_data.fecha_fin }}{% elif reserva %}{{ reserva.fecha_fin|date:'Y-m-d' }}{% endif %}">
         </div>
     </div>
 
@@ -106,22 +132,40 @@
         <label>Extras</label>
         <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:10px; margin-top:8px;">
             {% for extra in extras %}
-            <label style="display:flex; align-items:center; gap:10px; padding:12px; border:2px solid rgba(26,60,42,0.12); border-radius:8px; cursor:pointer;">
+            <label style="display:flex; align-items:center; gap:10px; padding:12px; border:2px solid rgba(4,44,83,0.12); border-radius:8px; cursor:pointer;">
                 <input type="checkbox" name="extras" value="{{ extra.id }}"
-                       {% if reserva and extra in reserva.extras.all %}checked{% endif %}
-                       style="accent-color:var(--verde-medio);">
+                       {% if form_data %}{% if extra.id|stringformat:"s" in extras_seleccionados %}checked{% endif %}{% elif reserva and extra in reserva.extras.all %}checked{% endif %}
+                       style="accent-color:var(--azul-principal);">
                 <span>
                     <strong style="display:block; font-size:0.88rem;">{{ extra.nombre }}</strong>
-                    <small style="color:var(--verde-medio);">${{ extra.precio|floatformat:0 }}</small>
+                    <small style="color:var(--terracota);">${{ extra.precio|floatformat:0 }}</small>
                 </span>
             </label>
             {% endfor %}
         </div>
     </div>
 
+    <p style="font-family:'Playfair Display',serif; color:var(--azul-oscuro); font-size:1.05rem; margin:28px 0 20px; padding-bottom:12px; border-bottom:2px solid var(--fondo-claro);">
+        Pago
+    </p>
+
+    <div class="form-row">
+        <div class="form-group">
+            <label>Total</label>
+            <input type="number" name="total" step="0.01" min="0" placeholder="0.00"
+                   value="{% if form_data.total %}{{ form_data.total }}{% elif reserva.total is not None %}{{ reserva.total }}{% endif %}">
+            <small style="color:var(--terracota);">Subtotal calculado: ${{ reserva.subtotal|floatformat:0|default:"" }}</small>
+        </div>
+        <div class="form-group">
+            <label>Valor con el que reservó</label>
+            <input type="number" name="valor_reserva" step="0.01" min="0" placeholder="0.00"
+                   value="{% if form_data.valor_reserva %}{{ form_data.valor_reserva }}{% elif reserva.valor_reserva is not None %}{{ reserva.valor_reserva }}{% endif %}">
+        </div>
+    </div>
+
     <div class="form-group">
         <label>Notas</label>
-        <textarea name="notas" rows="3" placeholder="Notas adicionales">{% if reserva %}{{ reserva.notas }}{% endif %}</textarea>
+        <textarea name="notas" rows="3" placeholder="Notas adicionales">{% if form_data.notas %}{{ form_data.notas }}{% elif reserva %}{{ reserva.notas }}{% endif %}</textarea>
     </div>
 
     <div style="display:flex; gap:12px; margin-top:8px;">
@@ -134,4 +178,76 @@
     </div>
 </form>
 
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+    var docInput = document.querySelector('input[name="documento"]');
+    if (!docInput) return;
+
+    var nombreInput    = document.querySelector('input[name="nombre"]');
+    var telefonoInput  = document.querySelector('input[name="telefono"]');
+    var correoInput    = document.querySelector('input[name="correo"]');
+    var fechaInput     = document.querySelector('input[name="fecha_nacimiento"]');
+
+    function buscarCliente(documento) {
+        if (!documento || documento.length < 3) return;
+
+        fetch('{% url "buscar_cliente" %}?documento=' + encodeURIComponent(documento))
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.encontrado) {
+                    var c = data.cliente;
+                    nombreInput.value   = c.nombre;
+                    telefonoInput.value = c.telefono;
+                    correoInput.value   = c.correo;
+                    fechaInput.value    = c.fecha_nacimiento;
+                    [nombreInput, telefonoInput, correoInput, fechaInput].forEach(function(el) {
+                        el.setAttribute('readonly', 'readonly');
+                        el.style.backgroundColor = '#E6F1FB';
+                    });
+                } else {
+                    [nombreInput, telefonoInput, correoInput, fechaInput].forEach(function(el) {
+                        el.removeAttribute('readonly');
+                        el.style.backgroundColor = '';
+                    });
+                }
+            })
+            .catch(function() {});
+    }
+
+    docInput.addEventListener('blur', function() {
+        buscarCliente(docInput.value.trim());
+    });
+
+    docInput.addEventListener('change', function() {
+        buscarCliente(docInput.value.trim());
+    });
+
+    // Toggle plan personalizado
+    var planCheckbox = document.getElementById('plan_personalizado');
+    var planFields = document.getElementById('plan_personalizado_fields');
+    if (planCheckbox && planFields) {
+        planCheckbox.addEventListener('change', function() {
+            planFields.style.display = this.checked ? 'flex' : 'none';
+        });
+    }
+
+    // Auto-completar precio del plan al seleccionar tarifa (solo si plan personalizado NO está activo)
+    var tarifaSelect = document.getElementById('tarifa_select');
+    var precioPlanInput = document.getElementById('precio_plan');
+    if (tarifaSelect && precioPlanInput) {
+        function autoFillPrecioPlan() {
+            if (planCheckbox && planCheckbox.checked) return;
+            var selected = tarifaSelect.options[tarifaSelect.selectedIndex];
+            if (selected && selected.dataset.precio) {
+                precioPlanInput.value = selected.dataset.precio;
+            }
+        }
+        tarifaSelect.addEventListener('change', autoFillPrecioPlan);
+        autoFillPrecioPlan();
+    }
+})();
+</script>
 {% endblock %}

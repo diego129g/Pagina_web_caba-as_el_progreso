@@ -1,6 +1,7 @@
 from django.views.generic import TemplateView, ListView, DetailView
 from django.views import View
 from django.contrib.auth.views import LoginView, LogoutView
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from .mixins import AdminRequiredMixin
@@ -76,11 +77,13 @@ class NuevaReservaAdminView(AdminRequiredMixin, View):
             return redirect('reservas_list')
         except Exception as e:
             context = {
-                'cabanas':  Cabana.objects.filter(activa=True),
-                'tarifas':  Tarifa.objects.select_related('plan', 'temporada').all(),
-                'extras':   Extra.objects.filter(activo=True),
-                'clientes': Cliente.objects.all(),
-                'error':    str(e),
+                'cabanas':             Cabana.objects.filter(activa=True),
+                'tarifas':             Tarifa.objects.select_related('plan', 'temporada').all(),
+                'extras':              Extra.objects.filter(activo=True),
+                'clientes':            Cliente.objects.all(),
+                'error':               str(e),
+                'form_data':           request.POST,
+                'extras_seleccionados': request.POST.getlist('extras'),
             }
             return render(request, 'gestion/reserva_form.html', context)
 
@@ -106,12 +109,14 @@ class ReservaEditView(AdminRequiredMixin, View):
             return redirect('reserva_detail', pk=pk)
         except Exception as e:
             context = {
-                'reserva':  reserva,
-                'cabanas':  Cabana.objects.filter(activa=True),
-                'tarifas':  Tarifa.objects.select_related('plan', 'temporada').all(),
-                'extras':   Extra.objects.filter(activo=True),
-                'clientes': Cliente.objects.all(),
-                'error':    str(e),
+                'reserva':             reserva,
+                'cabanas':             Cabana.objects.filter(activa=True),
+                'tarifas':             Tarifa.objects.select_related('plan', 'temporada').all(),
+                'extras':              Extra.objects.filter(activo=True),
+                'clientes':            Cliente.objects.all(),
+                'error':               str(e),
+                'form_data':           request.POST,
+                'extras_seleccionados': request.POST.getlist('extras'),
             }
             return render(request, 'gestion/reserva_form.html', context)
 
@@ -141,3 +146,22 @@ class DisponibilidadGestionView(AdminRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         context['cabanas'] = Cabana.objects.filter(activa=True)
         return context
+
+
+class BuscarClienteView(AdminRequiredMixin, View):
+
+    def get(self, request):
+        documento = request.GET.get('documento', '')
+        try:
+            cliente = Cliente.objects.get(documento=documento)
+            return JsonResponse({
+                'encontrado': True,
+                'cliente': {
+                    'nombre':           cliente.nombre,
+                    'telefono':         cliente.telefono,
+                    'correo':           cliente.correo or '',
+                    'fecha_nacimiento': cliente.fecha_nacimiento.isoformat(),
+                }
+            })
+        except Cliente.DoesNotExist:
+            return JsonResponse({'encontrado': False})
