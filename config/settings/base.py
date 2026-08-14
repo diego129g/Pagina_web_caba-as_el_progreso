@@ -26,6 +26,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'apps.core.middleware.MaintenanceModeMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -81,3 +82,8 @@ DATETIME_INPUT_FORMATS = [
 
 WASENDERAPPI_API_KEY = env('WASENDERAPPI_API_KEY', default='')
 WASENDERAPPI_PHONE   = env('WASENDERAPPI_PHONE', default='')
+
+# Modo mantenimiento: activar/desactivar solo cambiando MAINTENANCE_MODE en
+# el .env y reiniciando gunicorn, sin tocar código.
+MAINTENANCE_MODE        = env.bool('MAINTENANCE_MODE', default=False)
+MAINTENANCE_BYPASS_KEY  = env('MAINTENANCE_BYPASS_KEY', default='')
