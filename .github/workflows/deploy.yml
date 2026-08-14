@@ -1,0 +1,27 @@
+name: Deploy a Lightsail
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy vía SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          script: |
+            set -e
+            cd RUTA_DEL_PROYECTO
+            git pull origin main
+            source venv/bin/activate
+            pip install -r requirements.txt
+            ./deploy/manage_prod.sh migrate --noinput
+            ./deploy/manage_prod.sh collectstatic --noinput
+            sudo systemctl restart gunicorn

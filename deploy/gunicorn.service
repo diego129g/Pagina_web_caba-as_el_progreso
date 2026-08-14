@@ -1,0 +1,36 @@
+[Unit]
+Description=Gunicorn — Cabañas El Progreso
+After=network.target
+
+[Service]
+Type=simple
+
+# --- AJUSTAR ANTES DE INSTALAR ---
+# Usuario/grupo linux que corre la app y ruta donde clonaste el repo.
+User=ubuntu
+Group=www-data
+WorkingDirectory=/home/ubuntu/RUTA_DEL_PROYECTO
+# ----------------------------------
+
+RuntimeDirectory=gunicorn
+RuntimeDirectoryMode=0770
+
+Environment="DJANGO_SETTINGS_MODULE=config.settings.production"
+Environment="PYTHONUNBUFFERED=1"
+
+ExecStart=/home/ubuntu/RUTA_DEL_PROYECTO/venv/bin/gunicorn \
+    --workers 3 \
+    --bind unix:/run/gunicorn/gunicorn.sock \
+    --access-logfile - \
+    --error-logfile - \
+    config.wsgi:application
+
+ExecReload=/bin/kill -s HUP $MAINPID
+KillMode=mixed
+TimeoutStopSec=5
+Restart=on-failure
+RestartSec=5
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

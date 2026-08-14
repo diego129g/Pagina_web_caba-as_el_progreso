@@ -41,7 +41,7 @@
 
 <div class="table-card">
     <div class="table-card__header">
-        <h2>{{ reservas.count }} reserva{{ reservas.count|pluralize }}</h2>
+        <h2>{{ paginator.count }} reserva{{ paginator.count|pluralize }}</h2>
     </div>
     <div class="table-wrapper">
         <table>
@@ -91,6 +91,17 @@
             </tbody>
         </table>
     </div>
+    {% if is_paginated %}
+    <div style="display:flex; justify-content:center; align-items:center; gap:12px; padding:20px;">
+        {% if page_obj.has_previous %}
+            <a href="?{% if request.GET.estado %}estado={{ request.GET.estado }}&amp;{% endif %}{% if request.GET.cabana %}cabana={{ request.GET.cabana }}&amp;{% endif %}{% if request.GET.fecha %}fecha={{ request.GET.fecha }}&amp;{% endif %}page={{ page_obj.previous_page_number }}" class="btn-sm btn-sm--gris">‹ Anterior</a>
+        {% endif %}
+        <span style="font-size:0.85rem; color:var(--gris-texto);">Página {{ page_obj.number }} de {{ paginator.num_pages }}</span>
+        {% if page_obj.has_next %}
+            <a href="?{% if request.GET.estado %}estado={{ request.GET.estado }}&amp;{% endif %}{% if request.GET.cabana %}cabana={{ request.GET.cabana }}&amp;{% endif %}{% if request.GET.fecha %}fecha={{ request.GET.fecha }}&amp;{% endif %}page={{ page_obj.next_page_number }}" class="btn-sm btn-sm--gris">Siguiente ›</a>
+        {% endif %}
+    </div>
+    {% endif %}
 </div>
 
 {% endblock %}

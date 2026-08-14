@@ -146,7 +146,7 @@ def enviar_whatsapp(telefono, mensaje):
         response = requests.post(
             'https://www.wasenderapi.com/api/send-message',
             headers={
-                'Authorization': f'Bearer {'65b00faf5f080308958a7d3e9325799cde71b798fd17efaa9ee56568bbd78082'}',
+                'Authorization': f'Bearer {api_key}',
                 'Content-Type':  'application/json',
             },
             json={
