@@ -12,7 +12,11 @@ class Cliente(models.Model):
 
     def edad(self):
         hoy = timezone.now().date()
-        cumple = self.fecha_nacimiento.replace(year=hoy.year)
+        try:
+            cumple = self.fecha_nacimiento.replace(year=hoy.year)
+        except ValueError:
+            # 29 de febrero en un año que no es bisiesto
+            cumple = self.fecha_nacimiento.replace(year=hoy.year, month=3, day=1)
         return hoy.year - self.fecha_nacimiento.year - (1 if hoy < cumple else 0)
 
     def __str__(self):

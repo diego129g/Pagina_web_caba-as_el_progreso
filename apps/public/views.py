@@ -1,12 +1,14 @@
 import datetime
 import calendar
+import logging
 
 from django.views.generic import TemplateView, DetailView
 from django.views import View
 from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
-from urllib3 import request
 from apps.reservas.models import Cabana, Plan, Temporada, Extra, Tarifa, Reserva
+
+logger = logging.getLogger(__name__)
 
 
 class HomeView(TemplateView):
@@ -72,13 +74,14 @@ class NuevaReservaView(View):
         try:
             url_wpp = generar_url_whatsapp_formulario(request.POST)
             return redirect(url_wpp)
-    
-        except Exception as e:
+
+        except Exception:
+            logger.exception("Error generando el enlace de WhatsApp del formulario de reserva")
             context = {
                 'cabanas': Cabana.objects.filter(activa=True),
                 'tarifas': Tarifa.objects.select_related('plan', 'temporada').all(),
                 'extras':  Extra.objects.filter(activo=True),
-                'error': str(e),
+                'error': 'No se pudo procesar la solicitud. Revisa los datos ingresados e intenta de nuevo.',
             }
             return render(request, 'public/reserva_form.html', context)
 
