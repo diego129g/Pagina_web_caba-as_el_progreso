@@ -15,7 +15,7 @@ jobs:
           host: ${{ secrets.LIGHTSAIL_HOST }}
           username: ${{ secrets.LIGHTSAIL_USER }}
           key: ${{ secrets.LIGHTSAIL_SSH_KEY }}
-          port: ${{ secrets.SSH_PORT || 22 }}
+          port: 22
           script: |
             set -e
             cd /home/ubuntu/Pagina_web_caba-as_el_progreso
