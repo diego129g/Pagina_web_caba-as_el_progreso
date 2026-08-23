@@ -12,13 +12,13 @@ jobs:
       - name: Deploy vía SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: ${{ secrets.SSH_PORT || 22 }}
+          host: ${{ secrets.LIGHTSAIL_HOST }}
+          username: ${{ secrets.LIGHTSAIL_USER }}
+          key: ${{ secrets.LIGHTSAIL_SSH_KEY }}
+          port: 22
           script: |
             set -e
-            cd RUTA_DEL_PROYECTO
+            cd /home/ubuntu/Pagina_web_caba-as_el_progreso
             git pull origin main
             source venv/bin/activate
             pip install -r requirements.txt
