@@ -1,3 +1,6 @@
+import re
+import unicodedata
+
 from django.db import models
 from django.core.exceptions import ValidationError
 from django.utils import timezone
@@ -31,6 +34,11 @@ class Cabana(models.Model):
     nombre = models.CharField(max_length=100)
     activa = models.BooleanField(default=True)
     imagen_url = models.URLField(null=True, blank=True, verbose_name="Foto principal")
+    descripcion = models.TextField(
+        blank=True,
+        verbose_name="Descripción",
+        help_text="Comodidades, ubicación, etc. Se puede usar saltos de línea para separar párrafos.",
+    )
 
     def __str__(self):
         return self.nombre
@@ -71,6 +79,11 @@ class Plan(models.Model):
     descripcion = models.TextField(blank=True)
     duracion_horas = models.PositiveIntegerField()
     activo = models.BooleanField(default=True)
+
+    def es_dia_de_sol(self):
+        """True si el plan es de día de sol (admite entrada y salida el mismo día)."""
+        normalizado = unicodedata.normalize('NFKD', self.nombre).encode('ascii', 'ignore').decode('ascii').lower()
+        return re.search(r'\bdias?\s+de\s+sol\b', normalizado) is not None
 
     def __str__(self):
         return self.nombre
@@ -131,8 +144,13 @@ class Reserva(models.Model):
     def clean(self):
         if self.fecha_inicio and self.fecha_fin:
 
-            # Fecha fin debe ser posterior a fecha inicio
-            if self.fecha_fin <= self.fecha_inicio:
+            # Fecha fin debe ser posterior a fecha inicio; en los planes de
+            # día de sol se permite que entrada y salida sean el mismo día.
+            es_dia_de_sol = bool(self.tarifa_id and self.tarifa.plan.es_dia_de_sol())
+            if es_dia_de_sol:
+                if self.fecha_fin < self.fecha_inicio:
+                    raise ValidationError('La fecha de salida no puede ser anterior a la de entrada.')
+            elif self.fecha_fin <= self.fecha_inicio:
                 raise ValidationError('La fecha de salida debe ser posterior a la de entrada.')
 
             # Verificar solapamiento en la misma cabaña

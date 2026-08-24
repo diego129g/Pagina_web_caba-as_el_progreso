@@ -39,7 +39,11 @@
                 <div class="cabana-card__body">
                     <span class="cabana-card__badge">✅ Disponible</span>
                     <h3>{{ cabana.nombre }}</h3>
+                    {% if cabana.descripcion %}
+                    <p>{{ cabana.descripcion|truncatechars:140 }}</p>
+                    {% else %}
                     <p>Una experiencia única rodeada de naturaleza, diseñada especialmente para parejas que buscan descanso y romance.</p>
+                    {% endif %}
                     <a href="{% url 'cabana_detail' cabana.id %}" class="btn btn--outline btn--full">
                         📅 Ver más detalles
                     </a>

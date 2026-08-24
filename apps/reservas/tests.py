@@ -76,6 +76,56 @@ class ReservaOverlapTests(TestCase):
         reserva.full_clean()  # no debe lanzar por "solaparse" con su propio registro
 
 
+class DiaDeSolTests(TestCase):
+    """Los planes de día de sol permiten entrada y salida el mismo día."""
+
+    def setUp(self):
+        self.cabana = Cabana.objects.create(nombre='Cabaña Test')
+        self.plan_dia_sol = Plan.objects.create(nombre='Dias de sol', duracion_horas=8)
+        self.temporada = Temporada.objects.create(nombre='Temporada Test')
+        self.tarifa_dia_sol = Tarifa.objects.create(
+            plan=self.plan_dia_sol, temporada=self.temporada, precio=Decimal('90000'),
+        )
+        self.cliente = Cliente.objects.create(
+            nombre='Cliente Tres', documento='1003', telefono='3000000004',
+            fecha_nacimiento=datetime.date(1990, 1, 1),
+        )
+
+    def test_detecta_plan_dia_de_sol_con_y_sin_tilde(self):
+        self.assertTrue(Plan(nombre='Dias de sol', duracion_horas=8).es_dia_de_sol())
+        self.assertTrue(Plan(nombre='Día de Sol', duracion_horas=8).es_dia_de_sol())
+        self.assertFalse(Plan(nombre='Temporada Completa', duracion_horas=48).es_dia_de_sol())
+
+    def test_dia_de_sol_permite_entrada_igual_a_salida(self):
+        reserva = Reserva(
+            cliente=self.cliente, cabana=self.cabana, tarifa=self.tarifa_dia_sol,
+            fecha_inicio=_fecha(5), fecha_fin=_fecha(5),
+        )
+        reserva.full_clean()  # no debe lanzar
+        reserva.save()
+        self.assertEqual(Reserva.objects.count(), 1)
+
+    def test_dia_de_sol_rechaza_salida_anterior_a_entrada(self):
+        reserva = Reserva(
+            cliente=self.cliente, cabana=self.cabana, tarifa=self.tarifa_dia_sol,
+            fecha_inicio=_fecha(5), fecha_fin=_fecha(4),
+        )
+        with self.assertRaises(ValidationError):
+            reserva.full_clean()
+
+    def test_plan_normal_sigue_rechazando_fechas_iguales(self):
+        plan_noche = Plan.objects.create(nombre='Temporada Completa', duracion_horas=48)
+        tarifa_noche = Tarifa.objects.create(
+            plan=plan_noche, temporada=self.temporada, precio=Decimal('200000'),
+        )
+        reserva = Reserva(
+            cliente=self.cliente, cabana=self.cabana, tarifa=tarifa_noche,
+            fecha_inicio=_fecha(5), fecha_fin=_fecha(5),
+        )
+        with self.assertRaises(ValidationError):
+            reserva.full_clean()
+
+
 class ReservaCalculosTests(TestCase):
 
     def setUp(self):
