@@ -86,6 +86,7 @@
             <select name="tarifa_id" required id="tarifa_select">
                 {% for tarifa in tarifas %}
                     <option value="{{ tarifa.id }}" data-precio="{{ tarifa.precio }}"
+                        data-dia-sol="{% if tarifa.plan.es_dia_de_sol %}1{% else %}0{% endif %}"
                         {% if form_data.tarifa_id == tarifa.id|stringformat:"s" %}selected{% elif reserva and reserva.tarifa == tarifa %}selected{% endif %}>
                         {{ tarifa.plan.nombre }} — {{ tarifa.temporada.nombre }} (${{ tarifa.precio|floatformat:0 }})
                     </option>
@@ -247,6 +248,35 @@
         }
         tarifaSelect.addEventListener('change', autoFillPrecioPlan);
         autoFillPrecioPlan();
+    }
+
+    // Fechas: los planes de día de sol permiten entrada y salida el mismo día
+    var fechaInicioInput = document.querySelector('input[name="fecha_inicio"]');
+    var fechaFinInput    = document.querySelector('input[name="fecha_fin"]');
+
+    function sumarDias(fechaStr, dias) {
+        var partes = fechaStr.split('-');
+        var d = new Date(Number(partes[0]), Number(partes[1]) - 1, Number(partes[2]));
+        d.setDate(d.getDate() + dias);
+        var mm = String(d.getMonth() + 1).padStart(2, '0');
+        var dd = String(d.getDate()).padStart(2, '0');
+        return d.getFullYear() + '-' + mm + '-' + dd;
+    }
+
+    function actualizarMinFechaFin() {
+        if (!fechaInicioInput.value) {
+            fechaFinInput.removeAttribute('min');
+            return;
+        }
+        var selected = tarifaSelect.options[tarifaSelect.selectedIndex];
+        var diaDeSol = selected && selected.dataset.diaSol === '1';
+        fechaFinInput.min = sumarDias(fechaInicioInput.value, diaDeSol ? 0 : 1);
+    }
+
+    if (fechaInicioInput && fechaFinInput && tarifaSelect) {
+        fechaInicioInput.addEventListener('change', actualizarMinFechaFin);
+        tarifaSelect.addEventListener('change', actualizarMinFechaFin);
+        actualizarMinFechaFin();
     }
 })();
 </script>

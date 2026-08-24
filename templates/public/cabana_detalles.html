@@ -85,7 +85,11 @@
           <div class="detalle-info-card__body">
             <span class="detalle-info-card__badge">✅ Disponible</span>
             <h2><strong>{{ cabana.nombre }}</strong></h2>
+            {% if cabana.descripcion %}
+            <div class="detalle-info-card__desc">{{ cabana.descripcion|linebreaks }}</div>
+            {% else %}
             <p>Una experiencia única rodeada de naturaleza, diseñada especialmente para parejas que buscan descanso y romance.</p>
+            {% endif %}
             <a href="{% url 'nueva_reserva' %}" class="btn btn--primary btn--full">
               📅 Reservar ahora
             </a>
