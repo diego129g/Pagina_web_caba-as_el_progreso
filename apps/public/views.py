@@ -6,7 +6,12 @@ from django.views.generic import TemplateView, DetailView
 from django.views import View
 from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
-from apps.reservas.models import Cabana, Plan, Temporada, Extra, Tarifa, Reserva
+from django.views.decorators.http import require_POST
+from django.contrib import messages
+
+from apps.reservas.models import Cabana, Plan, Temporada, Extra, Tarifa, Reserva, Cliente
+from .models import Comentario
+from .forms import ComentarioForm
 
 logger = logging.getLogger(__name__)
 
@@ -48,6 +53,17 @@ class GaleriaView(TemplateView):
 
 class ExperienciasView(TemplateView):
     template_name = 'public/experiencias.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['comentarios'] = (
+            Comentario.objects
+            .filter(activo=True, comentario_padre__isnull=True)
+            .prefetch_related('respuestas')
+            .select_related('cliente')
+        )
+        context['form'] = ComentarioForm()
+        return context
 
 
 class NosotrosView(TemplateView):
@@ -131,3 +147,83 @@ class DisponibilidadView(View):
                 data['dias_ocupados'] = []
 
         return JsonResponse(data)
+
+
+# ── Comentarios AJAX ─────────────────────────────────────────────
+
+
+def _serializar_comentario(comentario):
+    return {
+        'id': comentario.id,
+        'nombre': comentario.nombre,
+        'correo': comentario.correo,
+        'texto': comentario.texto,
+        'creado_at': comentario.creado_at.strftime('%d/%m/%Y %H:%M'),
+        'es_respuesta': comentario.es_respuesta(),
+        'puede_eliminar': comentario.puede_eliminar(comentario._usuario_solicitante) if hasattr(comentario, '_usuario_solicitante') else False,
+    }
+
+
+@require_POST
+def crear_comentario(request):
+    form = ComentarioForm(request.POST)
+    if not form.is_valid():
+        return JsonResponse({'ok': False, 'errores': form.errors}, status=400)
+
+    comentario = form.save(commit=False)
+
+    cliente = Cliente.objects.filter(correo=comentario.correo).first()
+    if cliente:
+        comentario.cliente = cliente
+
+    comentario.save()
+    comentario._usuario_solicitante = request.user
+    return JsonResponse({'ok': True, 'comentario': _serializar_comentario(comentario)})
+
+
+@require_POST
+def responder_comentario(request, pk):
+    try:
+        padre = Comentario.objects.get(pk=pk, activo=True, comentario_padre__isnull=True)
+    except Comentario.DoesNotExist:
+        return JsonResponse({'ok': False, 'error': 'Comentario no encontrado.'}, status=404)
+
+    texto = request.POST.get('texto', '').strip()
+    if not texto:
+        return JsonResponse({'ok': False, 'errores': {'texto': ['Este campo es requerido.']}}, status=400)
+
+    nombre = request.POST.get('nombre', '').strip()
+    correo = request.POST.get('correo', '').strip()
+
+    if not nombre or not correo:
+        return JsonResponse({'ok': False, 'errores': {'nombre': ['Este campo es requerido.'], 'correo': ['Este campo es requerido.']}}, status=400)
+
+    comentario = Comentario.objects.create(
+        nombre=nombre,
+        correo=correo,
+        texto=texto,
+        comentario_padre=padre,
+    )
+
+    cliente = Cliente.objects.filter(correo=correo).first()
+    if cliente:
+        comentario.cliente = cliente
+        comentario.save()
+
+    comentario._usuario_solicitante = request.user
+    return JsonResponse({'ok': True, 'comentario': _serializar_comentario(comentario)})
+
+
+@require_POST
+def eliminar_comentario(request, pk):
+    try:
+        comentario = Comentario.objects.get(pk=pk)
+    except Comentario.DoesNotExist:
+        return JsonResponse({'ok': False, 'error': 'Comentario no encontrado.'}, status=404)
+
+    if not comentario.puede_eliminar(request.user):
+        return JsonResponse({'ok': False, 'error': 'No tienes permiso para eliminar este comentario.'}, status=403)
+
+    comentario.activo = False
+    comentario.save(update_fields=['activo'])
+    return JsonResponse({'ok': True})
