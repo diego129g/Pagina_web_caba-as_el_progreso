@@ -28,7 +28,7 @@
           {% for c in cabanas %}
           <a href="{% url 'cabana_detalles' c.id %}"
              class="detalle-sidebar__link{% if c.id == cabana.id %} active{% endif %}">
-            <span class="icon">🏡</span>
+            <span class="icon"></span>
             {{ c.nombre }}
           </a>
           {% endfor %}
@@ -113,7 +113,6 @@
             </div>
             <div class="tarifa-card__precio">
               <span class="monto">{{ tarifa.precio|floatformat:0 }}</span>
-              <span class="duracion">{{ tarifa.plan.duracion_horas }} horas</span>
             </div>
           </div>
           {% endfor %}

@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block title %}Experiencias — Cabañas El Progreso{% endblock %}
 {% block content %}
 
@@ -16,24 +17,14 @@
                 <p>Despierta temprano y contempla uno de los amaneceres más espectaculares desde tu cabaña.</p>
             </div>
             <div class="experiencia-card">
-                <div class="experiencia-card__icon">🔥</div>
-                <h3>Fogata romántica</h3>
-                <p>Disfruta de una noche especial alrededor de una fogata bajo las estrellas.</p>
-            </div>
-            <div class="experiencia-card">
                 <div class="experiencia-card__icon">🥂</div>
                 <h3>Cena especial</h3>
                 <p>Una cena íntima preparada especialmente para ti y tu pareja en un entorno mágico.</p>
             </div>
             <div class="experiencia-card">
-                <div class="experiencia-card__icon">🌿</div>
-                <h3>Caminatas por la naturaleza</h3>
-                <p>Explora senderos naturales rodeados de flora y fauna local con guías expertos.</p>
-            </div>
-            <div class="experiencia-card">
                 <div class="experiencia-card__icon">🛁</div>
                 <h3>Noche de spa</h3>
-                <p>Relájate con una noche de spa completa con jacuzzi, aromaterapia y más.</p>
+                <p>Relájate con una noche de spa completa con jacuzzi.</p>
             </div>
             <div class="experiencia-card">
                 <div class="experiencia-card__icon">📸</div>
@@ -44,4 +35,86 @@
     </div>
 </section>
 
+<!-- ── Comentarios ── -->
+<section class="comentarios-section">
+    <div class="container">
+        <h2 class="comentarios-section__titulo">Lo que dicen nuestros visitantes</h2>
+
+        <div class="comentarios-lista" id="comentarios-lista">
+            {% for comentario in comentarios %}
+            <div class="comentario" data-id="{{ comentario.id }}">
+                <div class="comentario__header">
+                    <div class="comentario__avatar">{{ comentario.nombre|first }}</div>
+                    <div class="comentario__meta">
+                        <span class="comentario__nombre">{{ comentario.nombre }}</span>
+                        <span class="comentario__fecha">{{ comentario.creado_at|date:"d/m/Y H:i" }}</span>
+                    </div>
+                    {% if user.is_staff or user.email == comentario.correo %}
+                    <button class="comentario__btn-eliminar" data-id="{{ comentario.id }}" title="Eliminar comentario">✕</button>
+                    {% endif %}
+                </div>
+                <p class="comentario__texto">{{ comentario.texto }}</p>
+                <div class="comentario__acciones">
+                    <button class="comentario__btn-responder" data-id="{{ comentario.id }}">Responder</button>
+                </div>
+
+                <!-- Formulario de respuesta inline -->
+                <div class="comentario-form-respuesta" id="respuesta-form-{{ comentario.id }}" style="display:none;">
+                    <input type="text" class="comentario-form__input" placeholder="Tu nombre" maxlength="100">
+                    <input type="email" class="comentario-form__input" placeholder="Tu correo electrónico">
+                    <textarea class="comentario-form__textarea" placeholder="Escribe tu respuesta..." maxlength="1000" rows="3"></textarea>
+                    <div class="comentario-form__acciones">
+                        <button class="btn btn--primary btn--sm comentario__btn-enviar-respuesta" data-parent="{{ comentario.id }}">Enviar respuesta</button>
+                        <button class="btn btn--outline btn--sm comentario__btn-cancelar-respuesta" data-parent="{{ comentario.id }}">Cancelar</button>
+                    </div>
+                </div>
+
+                <!-- Respuestas -->
+                {% for respuesta in comentario.respuestas.all %}
+                {% if respuesta.activo %}
+                <div class="comentario comentario--respuesta" data-id="{{ respuesta.id }}">
+                    <div class="comentario__header">
+                        <div class="comentario__avatar comentario__avatar--sm">{{ respuesta.nombre|first }}</div>
+                        <div class="comentario__meta">
+                            <span class="comentario__nombre">{{ respuesta.nombre }}</span>
+                            <span class="comentario__fecha">{{ respuesta.creado_at|date:"d/m/Y H:i" }}</span>
+                        </div>
+                        {% if user.is_staff or user.email == respuesta.correo %}
+                        <button class="comentario__btn-eliminar" data-id="{{ respuesta.id }}" title="Eliminar comentario">✕</button>
+                        {% endif %}
+                    </div>
+                    <p class="comentario__texto">{{ respuesta.texto }}</p>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+            {% empty %}
+            <p class="comentarios-vacios" id="comentarios-vacios">Sé el primero en dejar tu comentario sobre tu experiencia en Cabañas El Progreso.</p>
+            {% endfor %}
+        </div>
+
+        <!-- Formulario nuevo comentario -->
+        <div class="comentarios-form-wrapper">
+            <h3 class="comentarios-form__titulo">Deja tu comentario</h3>
+            <form class="comentarios-form" id="comentario-form" method="post">
+                {% csrf_token %}
+                <div class="comentarios-form__campos">
+                    <div class="comentarios-form__fila">
+                        <input type="text" class="comentario-form__input" name="nombre" placeholder="Tu nombre" maxlength="100" required>
+                        <input type="email" class="comentario-form__input" name="correo" placeholder="Tu correo electrónico" required>
+                    </div>
+                    <textarea class="comentario-form__textarea" name="texto" placeholder="Cuéntanos tu experiencia en Cabañas El Progreso..." maxlength="1000" rows="4" required></textarea>
+                </div>
+                <div class="comentarios-form__footer">
+                    <button type="submit" class="btn btn--primary">Publicar comentario</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/comentarios.js' %}"></script>
 {% endblock %}
