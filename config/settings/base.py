@@ -1,5 +1,6 @@
 from pathlib import Path
 import environ
+from datetime import timedelta
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -15,12 +16,30 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'rest_framework_simplejwt',
+    
     # Apps propias
     'apps.reservas',
     'apps.public',
     'apps.gestion',
     'apps.notificaciones',
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+}
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=2),   # cuánto dura el token de acceso
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),   # cuánto dura el token para renovar
+    'ROTATE_REFRESH_TOKENS': True,                  # cada refresh genera uno nuevo (más seguro)
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
