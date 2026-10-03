@@ -9,7 +9,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_POST
 from django.contrib import messages
 
-from apps.reservas.models import Cabana, Plan, Temporada, Extra, Tarifa, Reserva, Cliente
+from apps.reservas.models import Cabana, Plan, Temporada, Extra, Tarifa, Reserva
 from .models import Comentario
 from .forms import ComentarioForm
 
@@ -170,13 +170,7 @@ def crear_comentario(request):
     if not form.is_valid():
         return JsonResponse({'ok': False, 'errores': form.errors}, status=400)
 
-    comentario = form.save(commit=False)
-
-    cliente = Cliente.objects.filter(correo=comentario.correo).first()
-    if cliente:
-        comentario.cliente = cliente
-
-    comentario.save()
+    comentario = form.save()
     comentario._usuario_solicitante = request.user
     return JsonResponse({'ok': True, 'comentario': _serializar_comentario(comentario)})
 
@@ -204,11 +198,6 @@ def responder_comentario(request, pk):
         texto=texto,
         comentario_padre=padre,
     )
-
-    cliente = Cliente.objects.filter(correo=correo).first()
-    if cliente:
-        comentario.cliente = cliente
-        comentario.save()
 
     comentario._usuario_solicitante = request.user
     return JsonResponse({'ok': True, 'comentario': _serializar_comentario(comentario)})

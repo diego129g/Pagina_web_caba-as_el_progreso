@@ -1,4 +1,5 @@
 {% extends 'gestion/base_gestion.html' %}
+{% load static %}
 {% block title %}{% if reserva %}Editar{% else %}Nueva{% endif %} Reserva{% endblock %}
 {% block page_title %}{% if reserva %}Editar Reserva #{{ reserva.id }}{% else %}Nueva Reserva{% endif %}{% endblock %}
 
@@ -14,55 +15,38 @@
     <div class="error-msg" style="margin-bottom:24px;">⚠️ {{ error }}</div>
 {% endif %}
 
-<form method="POST" class="form-gestion">
+<form method="POST" class="form-gestion"
+      data-modo="{% if reserva %}editar{% else %}crear{% endif %}"
+      data-buscar-cliente-url="{% url 'buscar_cliente' %}">
     {% csrf_token %}
 
     <p style="font-family:'Playfair Display',serif; color:var(--azul-oscuro); font-size:1.05rem; margin-bottom:20px; padding-bottom:12px; border-bottom:2px solid var(--fondo-claro);">
         Cliente
     </p>
 
-    {% if not reserva %}
     <div class="form-row">
         <div class="form-group">
             <label>Nombre completo *</label>
             <input type="text" name="nombre" required placeholder="Nombre del huésped"
-                   value="{{ form_data.nombre|default:'' }}">
+                   value="{% if form_data %}{{ form_data.nombre }}{% elif reserva %}{{ reserva.cliente.nombre }}{% endif %}">
         </div>
         <div class="form-group">
             <label>Documento *</label>
             <input type="text" name="documento" required placeholder="Cédula o pasaporte"
-                   value="{{ form_data.documento|default:'' }}">
+                   value="{% if form_data %}{{ form_data.documento }}{% elif reserva %}{{ reserva.cliente.documento }}{% endif %}">
         </div>
     </div>
     <div class="form-row">
         <div class="form-group">
             <label>Teléfono *</label>
             <input type="tel" name="telefono" required placeholder="+57 300 000 0000"
-                   value="{{ form_data.telefono|default:'' }}">
-        </div>
-        <div class="form-group">
-            <label>Correo</label>
-            <input type="email" name="correo" placeholder="Opcional"
-                   value="{{ form_data.correo|default:'' }}">
+                   value="{% if form_data %}{{ form_data.telefono }}{% elif reserva %}{{ reserva.cliente.telefono }}{% endif %}">
         </div>
     </div>
-    <div class="form-group">
-        <label>Fecha de nacimiento *</label>
-        <input type="date" name="fecha_nacimiento" required
-               value="{{ form_data.fecha_nacimiento|default:'' }}">
-    </div>
-    {% else %}
-    <div class="form-group">
-        <label>Cliente</label>
-        <select name="cliente_id">
-            {% for cliente in clientes %}
-                <option value="{{ cliente.id }}"
-                    {% if reserva.cliente == cliente %}selected{% endif %}>
-                    {{ cliente.nombre }} — {{ cliente.documento }}
-                </option>
-            {% endfor %}
-        </select>
-    </div>
+    {% if reserva and reserva.cliente.reserva_set.count > 1 %}
+    <small style="display:block; margin:-8px 0 8px; color:var(--terracota);">
+        Este cliente tiene {{ reserva.cliente.reserva_set.count }} reservas: los cambios en sus datos se verán en todas.
+    </small>
     {% endif %}
 
     <p style="font-family:'Playfair Display',serif; color:var(--azul-oscuro); font-size:1.05rem; margin:28px 0 20px; padding-bottom:12px; border-bottom:2px solid var(--fondo-claro);">
@@ -182,102 +166,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
-(function() {
-    var docInput = document.querySelector('input[name="documento"]');
-    if (!docInput) return;
-
-    var nombreInput    = document.querySelector('input[name="nombre"]');
-    var telefonoInput  = document.querySelector('input[name="telefono"]');
-    var correoInput    = document.querySelector('input[name="correo"]');
-    var fechaInput     = document.querySelector('input[name="fecha_nacimiento"]');
-
-    function buscarCliente(documento) {
-        if (!documento || documento.length < 3) return;
-
-        fetch('{% url "buscar_cliente" %}?documento=' + encodeURIComponent(documento))
-            .then(function(r) { return r.json(); })
-            .then(function(data) {
-                if (data.encontrado) {
-                    var c = data.cliente;
-                    nombreInput.value   = c.nombre;
-                    telefonoInput.value = c.telefono;
-                    correoInput.value   = c.correo;
-                    fechaInput.value    = c.fecha_nacimiento;
-                    [nombreInput, telefonoInput, correoInput, fechaInput].forEach(function(el) {
-                        el.setAttribute('readonly', 'readonly');
-                        el.style.backgroundColor = '#E6F1FB';
-                    });
-                } else {
-                    [nombreInput, telefonoInput, correoInput, fechaInput].forEach(function(el) {
-                        el.removeAttribute('readonly');
-                        el.style.backgroundColor = '';
-                    });
-                }
-            })
-            .catch(function() {});
-    }
-
-    docInput.addEventListener('blur', function() {
-        buscarCliente(docInput.value.trim());
-    });
-
-    docInput.addEventListener('change', function() {
-        buscarCliente(docInput.value.trim());
-    });
-
-    // Toggle plan personalizado
-    var planCheckbox = document.getElementById('plan_personalizado');
-    var planFields = document.getElementById('plan_personalizado_fields');
-    if (planCheckbox && planFields) {
-        planCheckbox.addEventListener('change', function() {
-            planFields.style.display = this.checked ? 'flex' : 'none';
-        });
-    }
-
-    // Auto-completar precio del plan al seleccionar tarifa (solo si plan personalizado NO está activo)
-    var tarifaSelect = document.getElementById('tarifa_select');
-    var precioPlanInput = document.getElementById('precio_plan');
-    if (tarifaSelect && precioPlanInput) {
-        function autoFillPrecioPlan() {
-            if (planCheckbox && planCheckbox.checked) return;
-            var selected = tarifaSelect.options[tarifaSelect.selectedIndex];
-            if (selected && selected.dataset.precio) {
-                precioPlanInput.value = selected.dataset.precio;
-            }
-        }
-        tarifaSelect.addEventListener('change', autoFillPrecioPlan);
-        autoFillPrecioPlan();
-    }
-
-    // Fechas: los planes de día de sol permiten entrada y salida el mismo día
-    var fechaInicioInput = document.querySelector('input[name="fecha_inicio"]');
-    var fechaFinInput    = document.querySelector('input[name="fecha_fin"]');
-
-    function sumarDias(fechaStr, dias) {
-        var partes = fechaStr.split('-');
-        var d = new Date(Number(partes[0]), Number(partes[1]) - 1, Number(partes[2]));
-        d.setDate(d.getDate() + dias);
-        var mm = String(d.getMonth() + 1).padStart(2, '0');
-        var dd = String(d.getDate()).padStart(2, '0');
-        return d.getFullYear() + '-' + mm + '-' + dd;
-    }
-
-    function actualizarMinFechaFin() {
-        if (!fechaInicioInput.value) {
-            fechaFinInput.removeAttribute('min');
-            return;
-        }
-        var selected = tarifaSelect.options[tarifaSelect.selectedIndex];
-        var diaDeSol = selected && selected.dataset.diaSol === '1';
-        fechaFinInput.min = sumarDias(fechaInicioInput.value, diaDeSol ? 0 : 1);
-    }
-
-    if (fechaInicioInput && fechaFinInput && tarifaSelect) {
-        fechaInicioInput.addEventListener('change', actualizarMinFechaFin);
-        tarifaSelect.addEventListener('change', actualizarMinFechaFin);
-        actualizarMinFechaFin();
-    }
-})();
-</script>
+<script src="{% static 'js/gestion_reserva_form.js' %}"></script>
 {% endblock %}
