@@ -17,7 +17,6 @@ def mensaje_reserva_formulario(data):
     nombre = data.get("nombre")
     documento = data.get("documento")
     telefono = data.get("telefono")
-    correo = data.get("correo")
     fecha_inicio = data.get("fecha_inicio")
     fecha_fin = data.get("fecha_fin")
 
@@ -31,7 +30,6 @@ def mensaje_reserva_formulario(data):
 👤 Nombre: {nombre}
 👤 Documento: {documento}
 📞 Teléfono: {telefono}
-📧 Correo: {correo}
 🏡 Cabaña: {cabana.nombre}
 🎯 Plan: {tarifa.plan.nombre}
 🗓️ Temporada: {tarifa.temporada.nombre}"""

@@ -4,9 +4,10 @@ from django.views.generic import TemplateView, ListView, DetailView
 from django.views import View
 from django.contrib.auth.views import LoginView, LogoutView
 from django.core.cache import cache
-from django.http import JsonResponse
+from django.core.exceptions import ValidationError
+from django.http import JsonResponse, QueryDict
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
 from .mixins import AdminRequiredMixin
 from apps.reservas.models import Reserva, Cliente, Cabana, Tarifa, Extra
 
@@ -141,15 +142,20 @@ class ReservaEditView(AdminRequiredMixin, View):
         try:
             ReservaService().editar_reserva(reserva, request.POST)
             return redirect('reserva_detail', pk=pk)
-        except Exception:
-            logger.exception("Error editando reserva #%s desde el panel de gestión", pk)
+        except Exception as exc:
+            if isinstance(exc, ValidationError):
+                error = ' '.join(exc.messages)
+            else:
+                logger.exception("Error editando reserva #%s desde el panel de gestión", pk)
+                error = 'No se pudo guardar la reserva. Revisa los datos ingresados e intenta de nuevo.'
+            reserva.refresh_from_db()
             context = {
                 'reserva':             reserva,
                 'cabanas':             Cabana.objects.filter(activa=True),
                 'tarifas':             Tarifa.objects.select_related('plan', 'temporada').all(),
                 'extras':              Extra.objects.filter(activo=True),
                 'clientes':            Cliente.objects.all(),
-                'error':               'No se pudo guardar la reserva. Revisa los datos ingresados e intenta de nuevo.',
+                'error':               error,
                 'form_data':           request.POST,
                 'extras_seleccionados': request.POST.getlist('extras'),
             }
@@ -174,6 +180,21 @@ class CancelarReservaView(AdminRequiredMixin, View):
         return redirect('reserva_detail', pk=pk)
 
 
+class EliminarReservaView(AdminRequiredMixin, View):
+
+    def post(self, request, pk):
+        reserva = get_object_or_404(Reserva, pk=pk)
+        reserva.delete()  # los extras de la reserva se borran en cascada; el cliente se conserva
+        logger.info("Reserva #%s eliminada por %s", pk, request.user)
+
+        # Volver al listado con los mismos filtros, pero sin la página
+        # (si era el último registro de la página, esa página ya no existiría)
+        params = QueryDict(request.POST.get('filtros', ''), mutable=True)
+        params.pop('page', None)
+        url = reverse('reservas_list')
+        return redirect(f'{url}?{params.urlencode()}' if params else url)
+
+
 class DisponibilidadGestionView(AdminRequiredMixin, TemplateView):
     template_name = 'gestion/disponibilidad.html'
 
@@ -192,10 +213,8 @@ class BuscarClienteView(AdminRequiredMixin, View):
             return JsonResponse({
                 'encontrado': True,
                 'cliente': {
-                    'nombre':           cliente.nombre,
-                    'telefono':         cliente.telefono,
-                    'correo':           cliente.correo or '',
-                    'fecha_nacimiento': cliente.fecha_nacimiento.isoformat(),
+                    'nombre':   cliente.nombre,
+                    'telefono': cliente.telefono,
                 }
             })
         except Cliente.DoesNotExist:

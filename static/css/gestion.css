@@ -333,6 +333,37 @@ tbody td {
 .btn-sm--rojo:hover { background: #c0392b; color: var(--blanco); }
 .btn-sm--gris { background: var(--gris-suave); color: var(--gris-texto); }
 .btn-sm--gris:hover { background: var(--gris-texto); color: var(--blanco); }
+.btn-sm--rojo-solido { background: #c0392b; color: var(--blanco); }
+.btn-sm--rojo-solido:hover { background: #a93226; }
+.btn-sm:disabled { opacity: 0.6; cursor: wait; }
+
+/* Diálogo de confirmación para eliminar */
+.dialogo-eliminar {
+  margin: auto;
+  width: calc(100% - 32px);
+  max-width: 420px;
+  border: none;
+  border-radius: var(--radio);
+  padding: 24px;
+  box-shadow: 0 12px 40px rgba(4,44,83,0.25);
+  color: var(--negro);
+}
+.dialogo-eliminar::backdrop { background: rgba(4,44,83,0.45); }
+.dialogo-eliminar h3 { color: var(--azul-oscuro); font-size: 1.1rem; margin-bottom: 16px; }
+.dialogo-eliminar__datos {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px 16px;
+  padding: 14px 16px;
+  background: var(--fondo-claro);
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+.dialogo-eliminar__datos dt { font-weight: 700; color: var(--azul-medio); }
+.dialogo-eliminar__datos dd { overflow-wrap: anywhere; }
+.dialogo-eliminar__aviso { margin: 14px 0 20px; font-size: 0.85rem; color: #c0392b; }
+.dialogo-eliminar__acciones { display: flex; justify-content: flex-end; gap: 10px; }
+.dialogo-eliminar__acciones .btn-sm { padding: 9px 18px; font-size: 0.85rem; }
 
 /* ── Filtros ───────────────────────────────── */
 .filtros {

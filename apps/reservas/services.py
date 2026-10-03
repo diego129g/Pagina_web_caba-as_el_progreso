@@ -40,10 +40,8 @@ class ReservaService:
             cliente, _ = Cliente.objects.update_or_create(
                 documento=data.get('documento'),
                 defaults={
-                    'nombre':           data.get('nombre'),
-                    'telefono':         data.get('telefono'),
-                    'correo':           data.get('correo') or None,
-                    'fecha_nacimiento': data.get('fecha_nacimiento'),
+                    'nombre':   data.get('nombre'),
+                    'telefono': data.get('telefono'),
                 }
             )
 
@@ -95,6 +93,14 @@ class ReservaService:
     def editar_reserva(self, reserva, data):
         with transaction.atomic():
             cabana = Cabana.objects.select_for_update().get(pk=data.get('cabana_id'))
+
+            # Corregir datos del cliente de la reserva (afecta todas sus reservas)
+            cliente = reserva.cliente
+            cliente.nombre    = (data.get('nombre') or cliente.nombre).strip()
+            cliente.documento = (data.get('documento') or cliente.documento).strip()
+            cliente.telefono  = (data.get('telefono') or cliente.telefono).strip()
+            cliente.full_clean()
+            cliente.save()
 
             estado_anterior = reserva.estado
             estado_nuevo    = data.get('estado', reserva.estado)
