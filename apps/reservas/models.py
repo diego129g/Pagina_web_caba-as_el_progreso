@@ -3,24 +3,12 @@ import unicodedata
 
 from django.db import models
 from django.core.exceptions import ValidationError
-from django.utils import timezone
 
 class Cliente(models.Model):
     nombre = models.CharField(max_length=100)
     documento = models.CharField(max_length=20, unique=True)
     telefono = models.CharField(max_length=20)
-    correo = models.EmailField(unique=True,blank=True,null=True)
-    fecha_nacimiento = models.DateField()
     creado_at = models.DateTimeField(auto_now_add=True)
-
-    def edad(self):
-        hoy = timezone.now().date()
-        try:
-            cumple = self.fecha_nacimiento.replace(year=hoy.year)
-        except ValueError:
-            # 29 de febrero en un año que no es bisiesto
-            cumple = self.fecha_nacimiento.replace(year=hoy.year, month=3, day=1)
-        return hoy.year - self.fecha_nacimiento.year - (1 if hoy < cumple else 0)
 
     def __str__(self):
         return f"{self.nombre} ({self.documento})"

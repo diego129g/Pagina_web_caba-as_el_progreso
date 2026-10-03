@@ -4,7 +4,7 @@ from .models import Cliente, Cabana, CabanaFoto, Temporada, Plan, Tarifa, Extra,
 
 @admin.register(Cliente)
 class ClienteAdmin(admin.ModelAdmin):
-    list_display   = ['nombre', 'documento', 'telefono', 'correo', 'fecha_nacimiento']
+    list_display   = ['nombre', 'documento', 'telefono', 'creado_at']
     search_fields  = ['nombre', 'documento', 'telefono']
     ordering       = ['nombre']
 

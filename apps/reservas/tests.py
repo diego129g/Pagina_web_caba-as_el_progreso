@@ -24,7 +24,6 @@ class ReservaOverlapTests(TestCase):
         self.tarifa = Tarifa.objects.create(plan=self.plan, temporada=self.temporada, precio=Decimal('200000'))
         self.cliente = Cliente.objects.create(
             nombre='Cliente Uno', documento='1001', telefono='3000000000',
-            fecha_nacimiento=datetime.date(1990, 1, 1),
         )
 
     def _crear_reserva(self, cliente, inicio, fin, estado='confirmada'):
@@ -88,7 +87,6 @@ class DiaDeSolTests(TestCase):
         )
         self.cliente = Cliente.objects.create(
             nombre='Cliente Tres', documento='1003', telefono='3000000004',
-            fecha_nacimiento=datetime.date(1990, 1, 1),
         )
 
     def test_detecta_plan_dia_de_sol_con_y_sin_tilde(self):
@@ -136,7 +134,6 @@ class ReservaCalculosTests(TestCase):
         self.extra = Extra.objects.create(nombre='Desayuno', precio=Decimal('15000'))
         self.cliente = Cliente.objects.create(
             nombre='Cliente Dos', documento='1002', telefono='3000000001',
-            fecha_nacimiento=datetime.date(1990, 1, 1),
         )
         self.reserva = Reserva.objects.create(
             cliente=self.cliente, cabana=self.cabana, tarifa=self.tarifa,
@@ -157,19 +154,6 @@ class ReservaCalculosTests(TestCase):
         self.assertIsNone(self.reserva.valor_restante())
 
 
-class ClienteEdadTests(TestCase):
-
-    def test_edad_para_nacido_29_de_febrero(self):
-        cliente = Cliente.objects.create(
-            nombre='Nacido Bisiesto', documento='2001', telefono='3000000002',
-            fecha_nacimiento=datetime.date(2000, 2, 29),
-        )
-        # No debe lanzar ValueError incluso en años no bisiestos
-        edad = cliente.edad()
-        self.assertIsInstance(edad, int)
-        self.assertGreaterEqual(edad, 0)
-
-
 class ReservaServiceTests(TestCase):
     """Cubre el flujo completo usado por el panel de gestión."""
 
@@ -184,8 +168,6 @@ class ReservaServiceTests(TestCase):
             'nombre': 'Cliente Servicio',
             'documento': '3001',
             'telefono': '3000000003',
-            'correo': '',
-            'fecha_nacimiento': '1995-05-05',
             'cabana_id': str(self.cabana.id),
             'tarifa_id': str(self.tarifa.id),
             'fecha_inicio': _fecha(1).isoformat(),
@@ -230,3 +212,22 @@ class ReservaServiceTests(TestCase):
     def test_total_con_valor_cero_se_guarda_como_decimal(self, mock_enviar):
         reserva = ReservaService().crear_reserva(self._datos(total='0'))
         self.assertEqual(reserva.total, Decimal('0'))
+
+    @patch('apps.reservas.services.enviar_whatsapp')
+    def test_editar_reserva_actualiza_datos_del_cliente(self, mock_enviar):
+        service = ReservaService()
+        reserva = service.crear_reserva(self._datos(nombre='Nombre Mal Escrito'))
+        service.editar_reserva(reserva, self._datos(nombre='Nombre Correcto', telefono='3110000000'))
+        cliente = Cliente.objects.get(pk=reserva.cliente_id)
+        self.assertEqual(cliente.nombre, 'Nombre Correcto')
+        self.assertEqual(cliente.telefono, '3110000000')
+        self.assertEqual(Cliente.objects.count(), 1)
+
+    @patch('apps.reservas.services.enviar_whatsapp')
+    def test_editar_reserva_rechaza_documento_de_otro_cliente(self, mock_enviar):
+        service = ReservaService()
+        reserva = service.crear_reserva(self._datos(documento='3001'))
+        Cliente.objects.create(nombre='Otro', documento='9999', telefono='3000000009')
+        with self.assertRaises(ValidationError):
+            service.editar_reserva(reserva, self._datos(documento='9999'))
+        self.assertEqual(Cliente.objects.get(pk=reserva.cliente_id).documento, '3001')

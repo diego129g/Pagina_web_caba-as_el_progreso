@@ -1,4 +1,5 @@
 {% extends 'gestion/base_gestion.html' %}
+{% load static %}
 {% block title %}Reservas{% endblock %}
 {% block page_title %}Reservas{% endblock %}
 
@@ -78,6 +79,14 @@
                         <div class="actions">
                             <a href="{% url 'reserva_detail' reserva.pk %}" class="btn-sm btn-sm--gris">Ver</a>
                             <a href="{% url 'reserva_editar' reserva.pk %}" class="btn-sm btn-sm--verde">Editar</a>
+                            <button type="button" class="btn-sm btn-sm--rojo js-eliminar-reserva"
+                                    data-url="{% url 'eliminar_reserva' reserva.pk %}"
+                                    data-id="{{ reserva.id }}"
+                                    data-cliente="{{ reserva.cliente.nombre }} — {{ reserva.cliente.documento }}"
+                                    data-cabana="{{ reserva.cabana.nombre }}"
+                                    data-fechas="{{ reserva.fecha_inicio|date:'d/m/Y' }} al {{ reserva.fecha_fin|date:'d/m/Y' }}">
+                                Eliminar
+                            </button>
                         </div>
                     </td>
                 </tr>
@@ -104,4 +113,27 @@
     {% endif %}
 </div>
 
+<!-- Confirmación de eliminación -->
+<dialog id="dialogo-eliminar" class="dialogo-eliminar" aria-labelledby="dialogo-eliminar-titulo">
+    <form method="POST" id="form-eliminar">
+        {% csrf_token %}
+        <input type="hidden" name="filtros" value="{{ request.GET.urlencode }}">
+        <h3 id="dialogo-eliminar-titulo">¿Eliminar la reserva <span data-campo="id"></span>?</h3>
+        <dl class="dialogo-eliminar__datos">
+            <dt>Cliente</dt><dd data-campo="cliente"></dd>
+            <dt>Cabaña</dt><dd data-campo="cabana"></dd>
+            <dt>Fechas</dt><dd data-campo="fechas"></dd>
+        </dl>
+        <p class="dialogo-eliminar__aviso">Esta acción no se puede deshacer. El cliente seguirá registrado.</p>
+        <div class="dialogo-eliminar__acciones">
+            <button type="button" class="btn-sm btn-sm--gris" data-cerrar>Cancelar</button>
+            <button type="submit" class="btn-sm btn-sm--rojo-solido">Sí, eliminar</button>
+        </div>
+    </form>
+</dialog>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/gestion_eliminar_reserva.js' %}"></script>
 {% endblock %}
